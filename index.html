@@ -10,22 +10,56 @@
 <body>
     <!-- Authentication will be handled by auth.js -->
     <div class="app-container" id="mainApp" style="display: none;">
-        <!-- Header -->
-        <header class="header">
-            <div class="header-content">
-                <div class="logo-container">
-                    <div class="logo-icon">🌐</div>
-                    <h1 class="logo-text">IT Hadrami Packet Tracker</h1>
-                </div>
-                <div class="header-actions">
-                    <button id="showEducationWindow" class="btn btn-info">📚 Learning Center</button>
-                    <button id="exportScript" class="btn btn-primary">Export Script</button>
-                    <button id="clearCanvas" class="btn btn-secondary">Clear Canvas</button>
-                    <button id="saveProject" class="btn btn-success">Save Project</button>
-                    <button id="loadProject" class="btn btn-info">Load Project</button>
-                </div>
+        <!-- Title Bar -->
+        <div class="title-bar">
+            <span class="title-text">IT Hadrami Packet Tracker</span>
+            <span class="title-file" id="projectFileName">Untitled.pkt</span>
+        </div>
+
+        <!-- Menu Bar -->
+        <div class="menu-bar">
+            <div class="menu-item" data-menu="file">File</div>
+            <div class="menu-item" data-menu="edit">Edit</div>
+            <div class="menu-item" data-menu="options">Options</div>
+            <div class="menu-item" data-menu="view">View</div>
+            <div class="menu-item" data-menu="tools">Tools</div>
+            <div class="menu-item" data-menu="extensions">Extensions</div>
+            <div class="menu-item" data-menu="window">Window</div>
+            <div class="menu-item" data-menu="help">Help</div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="main-toolbar">
+            <div class="toolbar-group">
+                <button class="toolbar-btn" id="toolbarSave" title="Save">💾</button>
+                <button class="toolbar-btn" id="toolbarPrint" title="Print">🖨️</button>
+                <div class="toolbar-separator"></div>
+                <button class="toolbar-btn" id="toolbarCopy" title="Copy">📋</button>
+                <button class="toolbar-btn" id="toolbarPaste" title="Paste">📄</button>
+                <div class="toolbar-separator"></div>
+                <button class="toolbar-btn" id="toolbarUndo" title="Undo">↶</button>
+                <button class="toolbar-btn" id="toolbarRedo" title="Redo">↷</button>
+                <div class="toolbar-separator"></div>
+                <button class="toolbar-btn" id="toolbarZoomIn" title="Zoom In">🔍+</button>
+                <button class="toolbar-btn" id="toolbarZoomOut" title="Zoom Out">🔍-</button>
+                <button class="toolbar-btn" id="toolbarZoomFit" title="Zoom Fit">🔍</button>
+                <div class="toolbar-separator"></div>
+                <button class="toolbar-btn active" id="toolbarSelect" title="Select">👆</button>
+                <button class="toolbar-btn" id="toolbarMove" title="Move">✋</button>
+                <button class="toolbar-btn" id="toolbarInspect" title="Inspect">🔍</button>
+                <div class="toolbar-separator"></div>
+                <button class="toolbar-btn" id="toolbarDelete" title="Delete">🗑️</button>
+                <button class="toolbar-btn" id="toolbarNote" title="Add Note">📝</button>
+                <button class="toolbar-btn" id="toolbarDrawLine" title="Draw Line">📏</button>
+                <button class="toolbar-btn" id="toolbarPDU" title="Create PDU">📦</button>
             </div>
-        </header>
+        </div>
+
+        <!-- View Tabs -->
+        <div class="view-tabs">
+            <button class="view-tab active" data-view="logical">Logical</button>
+            <button class="view-tab" data-view="physical">Physical</button>
+        </div>
 
         <!-- Main Content Area -->
         <div class="main-content">
@@ -393,6 +427,42 @@
 
     <!-- Connection Line Overlay -->
     <svg id="connectionOverlay" class="connection-overlay"></svg>
+    </div>
+
+        <!-- Simulation Control Panel (Bottom) -->
+        <div class="simulation-panel" id="simulationPanel">
+            <div class="simulation-left">
+                <div class="simulation-time">
+                    <span>Time: </span>
+                    <span id="simulationTime">00:00:00.000</span>
+                </div>
+                <div class="play-controls">
+                    <button class="play-btn" id="simRewind" title="Rewind">⏮</button>
+                    <button class="play-btn active" id="simPlayPause" title="Play/Pause">⏸</button>
+                    <button class="play-btn" id="simForward" title="Fast Forward">⏭</button>
+                </div>
+                <div class="connection-types">
+                    <button class="conn-type-btn active" data-cable="auto" title="Auto Choose Connection Type">🔌</button>
+                    <button class="conn-type-btn" data-cable="straight" title="Straight-Through Cable">─</button>
+                    <button class="conn-type-btn" data-cable="cross" title="Crossover Cable">✕</button>
+                    <button class="conn-type-btn" data-cable="fiber" title="Fiber Optic">💎</button>
+                    <button class="conn-type-btn" data-cable="console" title="Console Cable">🖥️</button>
+                    <button class="conn-type-btn" data-cable="serial" title="Serial Cable">📡</button>
+                </div>
+            </div>
+            <div class="simulation-right">
+                <button class="sim-btn" id="eventListBtn">Event List</button>
+                <button class="sim-btn active" id="realtimeBtn">Realtime</button>
+                <button class="sim-btn" id="simulationBtn">Simulation</button>
+                <div class="scenario-controls">
+                    <span>Scenario 0</span>
+                    <button class="sim-btn-small" id="newScenario">New</button>
+                    <button class="sim-btn-small" id="deleteScenario">Delete</button>
+                </div>
+                <button class="sim-btn" id="togglePDUList">Toggle PDU List Window</button>
+                <button class="sim-btn" id="showEducationWindow">📚 Learning</button>
+            </div>
+        </div>
     </div>
 
     <!-- Footer -->

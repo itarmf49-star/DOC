@@ -142,6 +142,148 @@ class NetworkBuilder {
         if (copyBtn) copyBtn.addEventListener('click', () => this.copyScript());
         if (downloadBtn) downloadBtn.addEventListener('click', () => this.downloadScript());
         if (scriptFormat) scriptFormat.addEventListener('change', () => this.updateScript());
+        
+        // Packet Tracer style toolbar buttons
+        this.initializePacketTracerToolbar();
+        
+        // Menu items
+        this.initializeMenuBar();
+        
+        // View tabs
+        this.initializeViewTabs();
+        
+        // Simulation panel
+        this.initializeSimulationPanel();
+    }
+    
+    initializePacketTracerToolbar() {
+        // Toolbar buttons
+        const toolbarSave = document.getElementById('toolbarSave');
+        const toolbarPrint = document.getElementById('toolbarPrint');
+        const toolbarCopy = document.getElementById('toolbarCopy');
+        const toolbarPaste = document.getElementById('toolbarPaste');
+        const toolbarUndo = document.getElementById('toolbarUndo');
+        const toolbarRedo = document.getElementById('toolbarRedo');
+        const toolbarZoomIn = document.getElementById('toolbarZoomIn');
+        const toolbarZoomOut = document.getElementById('toolbarZoomOut');
+        const toolbarZoomFit = document.getElementById('toolbarZoomFit');
+        const toolbarSelect = document.getElementById('toolbarSelect');
+        const toolbarMove = document.getElementById('toolbarMove');
+        const toolbarInspect = document.getElementById('toolbarInspect');
+        const toolbarDelete = document.getElementById('toolbarDelete');
+        const toolbarNote = document.getElementById('toolbarNote');
+        const toolbarDrawLine = document.getElementById('toolbarDrawLine');
+        const toolbarPDU = document.getElementById('toolbarPDU');
+        
+        if (toolbarSave) toolbarSave.addEventListener('click', () => this.saveProject());
+        if (toolbarPrint) toolbarPrint.addEventListener('click', () => window.print());
+        if (toolbarCopy) toolbarCopy.addEventListener('click', () => {
+            const scriptOutput = document.getElementById('generatedScript');
+            if (scriptOutput) {
+                navigator.clipboard.writeText(scriptOutput.textContent);
+            }
+        });
+        if (toolbarZoomIn) toolbarZoomIn.addEventListener('click', () => this.zoom(1.1));
+        if (toolbarZoomOut) toolbarZoomOut.addEventListener('click', () => this.zoom(0.9));
+        if (toolbarZoomFit) toolbarZoomFit.addEventListener('click', () => this.resetZoom());
+        if (toolbarSelect) toolbarSelect.addEventListener('click', () => {
+            this.setMode('select');
+            document.querySelectorAll('.toolbar-btn').forEach(btn => btn.classList.remove('active'));
+            toolbarSelect.classList.add('active');
+        });
+        if (toolbarDelete) toolbarDelete.addEventListener('click', () => {
+            this.setMode('delete');
+            document.querySelectorAll('.toolbar-btn').forEach(btn => btn.classList.remove('active'));
+            toolbarDelete.classList.add('active');
+        });
+        
+        // Connect mode - link to existing connectMode button
+        const connectModeBtn = document.getElementById('connectMode');
+        if (connectModeBtn) {
+            connectModeBtn.addEventListener('click', () => {
+                document.querySelectorAll('.toolbar-btn').forEach(btn => btn.classList.remove('active'));
+            });
+        }
+    }
+    
+    initializeMenuBar() {
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                const menu = e.target.dataset.menu;
+                console.log(`Menu clicked: ${menu}`);
+                // Menu functionality can be expanded here
+                if (menu === 'help') {
+                    const helpBtn = document.getElementById('helpButton');
+                    if (helpBtn) helpBtn.click();
+                }
+            });
+        });
+    }
+    
+    initializeViewTabs() {
+        document.querySelectorAll('.view-tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
+                e.target.classList.add('active');
+                const view = e.target.dataset.view;
+                console.log(`View switched to: ${view}`);
+                // View switching logic can be added here
+            });
+        });
+    }
+    
+    initializeSimulationPanel() {
+        const simRewind = document.getElementById('simRewind');
+        const simPlayPause = document.getElementById('simPlayPause');
+        const simForward = document.getElementById('simForward');
+        const realtimeBtn = document.getElementById('realtimeBtn');
+        const simulationBtn = document.getElementById('simulationBtn');
+        const eventListBtn = document.getElementById('eventListBtn');
+        const togglePDUList = document.getElementById('togglePDUList');
+        const connTypeBtns = document.querySelectorAll('.conn-type-btn');
+        
+        let isPlaying = false;
+        if (simPlayPause) {
+            simPlayPause.addEventListener('click', () => {
+                isPlaying = !isPlaying;
+                simPlayPause.textContent = isPlaying ? '⏸' : '▶';
+                // Simulation play/pause logic can be added here
+            });
+        }
+        
+        // Connection type buttons
+        connTypeBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.conn-type-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                const cableType = e.target.dataset.cable;
+                console.log(`Connection type selected: ${cableType}`);
+                // Connection type logic can be added here
+            });
+        });
+        
+        // Realtime/Simulation toggle
+        if (realtimeBtn) {
+            realtimeBtn.addEventListener('click', () => {
+                realtimeBtn.classList.add('active');
+                if (simulationBtn) simulationBtn.classList.remove('active');
+            });
+        }
+        if (simulationBtn) {
+            simulationBtn.addEventListener('click', () => {
+                simulationBtn.classList.add('active');
+                if (realtimeBtn) realtimeBtn.classList.remove('active');
+            });
+        }
+        
+        // Update simulation time
+        setInterval(() => {
+            const timeEl = document.getElementById('simulationTime');
+            if (timeEl && isPlaying) {
+                // Update time display (simplified)
+                // Real implementation would track actual simulation time
+            }
+        }, 100);
     }
 
     initializeCanvas() {

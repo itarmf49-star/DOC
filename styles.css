@@ -37,17 +37,144 @@ body {
     min-height: 100vh;
     width: 100vw;
     overflow: hidden;
+    background: #f0f0f0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* Header - RAK Portal Style */
+/* Title Bar - Packet Tracer Style */
+.title-bar {
+    background: #e8e8e8;
+    border-bottom: 1px solid #ccc;
+    padding: 4px 8px;
+    font-size: 12px;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.title-text {
+    font-weight: 600;
+    color: #0066cc;
+}
+
+.title-file {
+    color: #666;
+}
+
+/* Menu Bar - Packet Tracer Style */
+.menu-bar {
+    background: #f5f5f5;
+    border-bottom: 1px solid #ccc;
+    display: flex;
+    align-items: center;
+    padding: 2px 4px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.menu-item {
+    padding: 2px 12px;
+    font-size: 12px;
+    color: #333;
+    cursor: pointer;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    user-select: none;
+}
+
+.menu-item:hover {
+    background: #e0e0e0;
+    border-color: #999;
+}
+
+/* Main Toolbar - Packet Tracer Style */
+.main-toolbar {
+    background: #f5f5f5;
+    border-bottom: 1px solid #ccc;
+    padding: 4px 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 32px;
+    flex-shrink: 0;
+    overflow-x: auto;
+}
+
+.toolbar-group {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.toolbar-separator {
+    width: 1px;
+    height: 20px;
+    background: #ccc;
+    margin: 0 4px;
+}
+
+.toolbar-btn {
+    width: 24px;
+    height: 24px;
+    border: 1px solid #ccc;
+    background: white;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 2px;
+    padding: 0;
+}
+
+.toolbar-btn:hover {
+    background: #e8f4fd;
+    border-color: #0066cc;
+}
+
+.toolbar-btn.active {
+    background: #cce8ff;
+    border-color: #0066cc;
+}
+
+/* View Tabs - Packet Tracer Style */
+.view-tabs {
+    background: #e8e8e8;
+    border-bottom: 1px solid #ccc;
+    display: flex;
+    padding: 0 4px;
+    height: 28px;
+    flex-shrink: 0;
+}
+
+.view-tab {
+    padding: 4px 16px;
+    font-size: 12px;
+    color: #333;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    user-select: none;
+}
+
+.view-tab:hover {
+    background: #f0f0f0;
+}
+
+.view-tab.active {
+    background: white;
+    border-bottom-color: #0066cc;
+    color: #0066cc;
+    font-weight: 600;
+}
+
+/* Header - RAK Portal Style (Keeping for compatibility but hidden) */
 .header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-bottom: 3px solid rgba(255, 255, 255, 0.2);
-    padding: 1rem 1.5rem;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    z-index: 100;
-    position: relative;
-    overflow: hidden;
+    display: none;
 }
 
 .header::before {
@@ -276,12 +403,20 @@ body {
     font-weight: 500;
 }
 
+/* Main Content Area */
+.main-content {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    background: white;
+}
+
 /* Canvas Area */
 .canvas-area {
     flex: 1;
     display: flex;
     flex-direction: column;
-    background: var(--bg-primary);
+    background: white;
     position: relative;
     overflow: hidden;
 }
@@ -1501,5 +1636,104 @@ body {
         radial-gradient(circle at 2px 2px, rgba(0, 0, 0, 0.03) 1px, transparent 0);
     background-size: 40px 40px;
     pointer-events: none;
+}
+
+/* Device Palette - Packet Tracer Style Update */
+.device-palette {
+    width: 220px !important;
+    background: #f5f5f5 !important;
+    border-right: 1px solid #ccc !important;
+    padding: 8px !important;
+}
+
+.device-palette h2 {
+    font-size: 13px !important;
+    color: #333 !important;
+    margin-bottom: 8px !important;
+    padding: 4px !important;
+    border-bottom: 1px solid #ccc !important;
+    font-weight: 600 !important;
+}
+
+.device-category h3 {
+    font-size: 11px !important;
+    color: #0066cc !important;
+    margin: 8px 0 4px 0 !important;
+    padding: 2px 4px !important;
+    border-bottom: 1px solid #ccc !important;
+    font-weight: 600 !important;
+}
+
+.device-item {
+    background: white !important;
+    border: 1px solid #ccc !important;
+    padding: 6px 8px !important;
+    font-size: 11px !important;
+    color: #333 !important;
+}
+
+.device-item:hover {
+    background: #e8f4fd !important;
+    border-color: #0066cc !important;
+}
+
+.device-item span {
+    color: #333 !important;
+}
+
+/* Properties Panel - Packet Tracer Style Update */
+.properties-panel {
+    background: #f5f5f5 !important;
+    border-left: 1px solid #ccc !important;
+}
+
+.properties-panel::before {
+    display: none !important;
+}
+
+.panel-tabs {
+    background: #e8e8e8 !important;
+    border-bottom: 1px solid #ccc !important;
+}
+
+.tab-btn {
+    color: #333 !important;
+    font-size: 11px !important;
+    background: transparent !important;
+}
+
+.tab-btn.active {
+    background: #cce8ff !important;
+    color: #0066cc !important;
+    border-bottom-color: #0066cc !important;
+}
+
+.tab-content {
+    background: white !important;
+    color: #333 !important;
+}
+
+/* Canvas Toolbar - Packet Tracer Style Update */
+.canvas-toolbar {
+    background: #f5f5f5 !important;
+    border-bottom: 1px solid #ccc !important;
+    padding: 4px 8px !important;
+}
+
+.tool-btn {
+    background: white !important;
+    border: 1px solid #ccc !important;
+    color: #333 !important;
+    font-size: 11px !important;
+}
+
+.tool-btn:hover {
+    background: #e8f4fd !important;
+    border-color: #0066cc !important;
+}
+
+.tool-btn.active {
+    background: #cce8ff !important;
+    border-color: #0066cc !important;
 }
 
