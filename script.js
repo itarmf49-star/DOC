@@ -8,7 +8,7 @@ class NetworkBuilder {
         this.draggedDevice = null;
         this.isDrawingConnection = false;
         this.connectionStart = null;
-        this.deviceCounter = { router: 0, switch: 0, pc: 0, server: 0, laptop: 0, wireless: 0, firewall: 0, cloud: 0, facade: 0, ipbx: 0, ipphone: 0 };
+        this.deviceCounter = { router: 0, switch: 0, pc: 0, server: 0, laptop: 0, wireless: 0, firewall: 0, cloud: 0, facade: 0, ipbx: 0, ipphone: 0, dahua: 0, cable: 0 };
         this.zoomLevel = 1;
         this.departmentType = 'all-system';
         this.cliEngine = null;
@@ -508,6 +508,27 @@ class NetworkBuilder {
                 props.omadaMode = 'standalone'; // standalone or controller-managed
             }
             return props;
+        } else if (type === 'dahua') {
+            const dahuaProps = {
+                ...baseProps,
+                model: model || 'dahua-nvr',
+                channels: model && model.includes('nvr') ? '16' : '1',
+                resolution: '1920x1080',
+                codec: 'H.264',
+                recordingMode: 'continuous'
+            };
+            if (model && model.includes('nvr')) {
+                dahuaProps.hddSlots = '4';
+                dahuaProps.maxChannels = '32';
+            }
+            return dahuaProps;
+        } else if (type === 'cable') {
+            return {
+                ...baseProps,
+                cableType: model || 'straight-through',
+                length: '3m',
+                category: 'Cat5e'
+            };
         } else if (type === 'facade') {
             return {
                 ...baseProps,
@@ -1444,6 +1465,59 @@ class NetworkBuilder {
             });
         }
 
+        // Community Chat Window
+        const communityChatBtn = document.getElementById('communityChatBtn');
+        const communityChatModal = document.getElementById('communityChatModal');
+        const closeCommunityChat = document.getElementById('closeCommunityChat');
+        
+        if (communityChatBtn && communityChatModal) {
+            communityChatBtn.addEventListener('click', () => {
+                communityChatModal.classList.add('active');
+                this.loadCommunityMessages();
+            });
+        }
+        
+        if (closeCommunityChat && communityChatModal) {
+            closeCommunityChat.addEventListener('click', () => {
+                communityChatModal.classList.remove('active');
+            });
+            communityChatModal.addEventListener('click', (e) => {
+                if (e.target === communityChatModal) {
+                    communityChatModal.classList.remove('active');
+                }
+            });
+        }
+        
+        // Community chat input
+        const communityInput = document.getElementById('communityInput');
+        const communitySendBtn = document.getElementById('communitySendBtn');
+        if (communityInput && communitySendBtn) {
+            const sendCommunityMessage = () => {
+                const message = communityInput.value.trim();
+                if (message) {
+                    this.addCommunityMessage(message, 'user');
+                    communityInput.value = '';
+                    this.saveCommunityMessages();
+                }
+            };
+            communitySendBtn.addEventListener('click', sendCommunityMessage);
+            communityInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendCommunityMessage();
+                }
+            });
+        }
+        
+        // WhatsApp button
+        const whatsappBtn = document.getElementById('whatsappBtn');
+        if (whatsappBtn) {
+            whatsappBtn.addEventListener('click', () => {
+                const whatsappNumber = '0022247774141';
+                const message = encodeURIComponent('Hello IT Hadrami Community!');
+                window.open(`https://wa.me/${whatsappNumber}?text=${message}`, '_blank');
+            });
+        }
+        
         // Education tabs
         document.querySelectorAll('.edu-tab').forEach(tab => {
             tab.addEventListener('click', () => {
@@ -1455,6 +1529,80 @@ class NetworkBuilder {
                 if (content) content.classList.add('active');
             });
         });
+    }
+
+    addCommunityMessage(message, sender = 'user') {
+        const messagesDiv = document.getElementById('communityMessages');
+        if (!messagesDiv) return;
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `community-message ${sender}`;
+        
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString();
+        
+        if (sender === 'user') {
+            messageDiv.innerHTML = `
+                <div class="message-avatar">👤</div>
+                <div class="message-content">
+                    <div class="message-header">
+                        <span class="message-author">You</span>
+                        <span class="message-time">${timeStr}</span>
+                    </div>
+                    <div class="message-text">${message}</div>
+                </div>
+            `;
+        } else {
+            messageDiv.innerHTML = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    <div class="message-header">
+                        <span class="message-author">${sender}</span>
+                        <span class="message-time">${timeStr}</span>
+                    </div>
+                    <div class="message-text">${message}</div>
+                </div>
+            `;
+        }
+        
+        messagesDiv.appendChild(messageDiv);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+    
+    loadCommunityMessages() {
+        const messages = JSON.parse(localStorage.getItem('hadrami_community_messages') || '[]');
+        const messagesDiv = document.getElementById('communityMessages');
+        if (!messagesDiv) return;
+        
+        // Keep system message, clear others
+        const systemMsg = messagesDiv.querySelector('.system');
+        messagesDiv.innerHTML = '';
+        if (systemMsg) messagesDiv.appendChild(systemMsg);
+        
+        // Load saved messages
+        messages.forEach(msg => {
+            this.addCommunityMessage(msg.text, msg.sender);
+        });
+    }
+    
+    saveCommunityMessages() {
+        const messagesDiv = document.getElementById('communityMessages');
+        if (!messagesDiv) return;
+        
+        const messages = [];
+        messagesDiv.querySelectorAll('.community-message:not(.system)').forEach(msg => {
+            const text = msg.querySelector('.message-text')?.textContent || '';
+            const author = msg.querySelector('.message-author')?.textContent || '';
+            if (text && author) {
+                messages.push({
+                    text: text,
+                    sender: author === 'You' ? 'user' : author,
+                    time: msg.querySelector('.message-time')?.textContent || ''
+                });
+            }
+        });
+        
+        localStorage.setItem('hadrami_community_messages', JSON.stringify(messages));
     }
 
     initializeCheatSheet() {
@@ -1556,10 +1704,23 @@ class NetworkBuilder {
             }
         };
 
-        return info[device.type] || {
+        const defaultInfo = info[device.type] || {
             name: device.type.toUpperCase(),
-            html: `<p>Device information for ${device.label}</p>`
+            html: `
+                <div class="device-info-section">
+                    <h3>📋 Device Information</h3>
+                    <table class="device-spec-table">
+                        <tr><td><strong>Label:</strong></td><td>${device.label}</td></tr>
+                        <tr><td><strong>Type:</strong></td><td>${device.type}</td></tr>
+                        <tr><td><strong>Model:</strong></td><td>${device.model || 'Generic'}</td></tr>
+                        ${props.hostname ? `<tr><td><strong>Hostname:</strong></td><td>${props.hostname}</td></tr>` : ''}
+                        ${props.ip ? `<tr><td><strong>IP Address:</strong></td><td>${props.ip}</td></tr>` : ''}
+                    </table>
+                </div>
+            `
         };
+        
+        return defaultInfo;
     }
 
     showHelpModal() {

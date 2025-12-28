@@ -1737,3 +1737,325 @@ body {
     border-color: #0066cc !important;
 }
 
+
+/* Community Chat and Device Info Styles */
+/* Community Chat Modal */
+.community-modal .modal-content {
+    max-width: 600px;
+    height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.community-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+}
+
+.community-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    background: #f9f9f9;
+    margin-bottom: 1rem;
+}
+
+.community-message {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.message-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.community-message.system .message-avatar {
+    background: #e3f2fd;
+}
+
+.community-message.user .message-avatar {
+    background: #f3e5f5;
+}
+
+.message-content {
+    flex: 1;
+    background: white;
+    padding: 0.75rem;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.message-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.25rem;
+    font-size: 0.75rem;
+    color: #666;
+}
+
+.message-author {
+    font-weight: 600;
+    color: #333;
+}
+
+.message-text {
+    color: #333;
+    line-height: 1.5;
+}
+
+.community-input-area {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border-top: 1px solid #ddd;
+}
+
+.community-input {
+    flex: 1;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.875rem;
+}
+
+.community-info {
+    padding: 0.5rem;
+    font-size: 0.75rem;
+    color: #666;
+    text-align: center;
+    border-top: 1px solid #eee;
+}
+
+/* WhatsApp Button */
+.whatsapp-btn {
+    background: #25d366 !important;
+    color: white !important;
+    border-color: #25d366 !important;
+}
+
+.whatsapp-btn:hover {
+    background: #20ba5a !important;
+}
+
+/* Device Info Modal Styles */
+.device-info-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.device-info-section:last-child {
+    border-bottom: none;
+}
+
+.device-info-section h3 {
+    color: #0066cc;
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+}
+
+.device-spec-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.device-spec-table td {
+    padding: 0.5rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.device-spec-table td:first-child {
+    width: 40%;
+    color: #666;
+}
+
+.device-spec-table td:last-child {
+    color: #333;
+    font-weight: 500;
+}
+
+/* Cisco and Dahua Device Icons */
+.cisco-router-icon,
+.cisco-switch-icon,
+.cisco-wireless-icon {
+    background: linear-gradient(145deg, #0077b5, #005885) !important;
+}
+
+.dahua-icon {
+    background: linear-gradient(145deg, #ff6b00, #cc5500) !important;
+}
+
+.cable-icon {
+    background: linear-gradient(145deg, #9e9e9e, #757575) !important;
+}
+
+
+/* Community Chat Modal */
+.community-modal .modal-content {
+    max-width: 600px;
+    height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.community-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+}
+
+.community-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    background: #f9f9f9;
+    margin-bottom: 1rem;
+}
+
+.community-message {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.message-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.community-message.system .message-avatar {
+    background: #e3f2fd;
+}
+
+.community-message.user .message-avatar {
+    background: #f3e5f5;
+}
+
+.message-content {
+    flex: 1;
+    background: white;
+    padding: 0.75rem;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.message-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.25rem;
+    font-size: 0.75rem;
+    color: #666;
+}
+
+.message-author {
+    font-weight: 600;
+    color: #333;
+}
+
+.message-text {
+    color: #333;
+    line-height: 1.5;
+}
+
+.community-input-area {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border-top: 1px solid #ddd;
+}
+
+.community-input {
+    flex: 1;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.875rem;
+}
+
+.community-info {
+    padding: 0.5rem;
+    font-size: 0.75rem;
+    color: #666;
+    text-align: center;
+    border-top: 1px solid #eee;
+}
+
+/* WhatsApp Button */
+.whatsapp-btn {
+    background: #25d366 !important;
+    color: white !important;
+    border-color: #25d366 !important;
+}
+
+.whatsapp-btn:hover {
+    background: #20ba5a !important;
+}
+
+/* Device Info Modal Styles */
+.device-info-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.device-info-section:last-child {
+    border-bottom: none;
+}
+
+.device-info-section h3 {
+    color: #0066cc;
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+}
+
+.device-spec-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.device-spec-table td {
+    padding: 0.5rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.device-spec-table td:first-child {
+    width: 40%;
+    color: #666;
+}
+
+.device-spec-table td:last-child {
+    color: #333;
+    font-weight: 500;
+}
+
+/* Cisco and Dahua Device Icons */
+.cisco-router-icon,
+.cisco-switch-icon,
+.cisco-wireless-icon {
+    background: linear-gradient(145deg, #0077b5, #005885) !important;
+}
+
+.dahua-icon {
+    background: linear-gradient(145deg, #ff6b00, #cc5500) !important;
+}
+
+.cable-icon {
+    background: linear-gradient(145deg, #9e9e9e, #757575) !important;
+}

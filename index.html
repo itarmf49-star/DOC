@@ -12,7 +12,7 @@
     <div class="app-container" id="mainApp" style="display: none;">
         <!-- Title Bar -->
         <div class="title-bar">
-            <span class="title-text">IT Hadrami Packet Tracker</span>
+            <span class="title-text">IT Hadrami</span>
             <span class="title-file" id="projectFileName">Untitled.pkt</span>
         </div>
 
@@ -168,6 +168,88 @@
                         <div class="device-item" data-type="cloud" data-device="cloud">
                             <div class="device-icon cloud-icon">☁️</div>
                             <span>Cloud</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="device-category">
+                    <h3>Cisco Devices</h3>
+                    <div class="device-items">
+                        <div class="device-item" data-type="router" data-device="cisco-1941">
+                            <div class="device-icon cisco-router-icon">🔄</div>
+                            <span>Cisco 1941 Router</span>
+                        </div>
+                        <div class="device-item" data-type="router" data-device="cisco-2901">
+                            <div class="device-icon cisco-router-icon">🔄</div>
+                            <span>Cisco 2901 Router</span>
+                        </div>
+                        <div class="device-item" data-type="switch" data-device="cisco-2960">
+                            <div class="device-icon cisco-switch-icon">🔀</div>
+                            <span>Cisco 2960 Switch</span>
+                        </div>
+                        <div class="device-item" data-type="switch" data-device="cisco-3750">
+                            <div class="device-icon cisco-switch-icon">🔀</div>
+                            <span>Cisco 3750 Switch</span>
+                        </div>
+                        <div class="device-item" data-type="switch" data-device="cisco-3560">
+                            <div class="device-icon cisco-switch-icon">🔀</div>
+                            <span>Cisco 3560 Switch</span>
+                        </div>
+                        <div class="device-item" data-type="wireless" data-device="cisco-wap">
+                            <div class="device-icon cisco-wireless-icon">📡</div>
+                            <span>Cisco WAP</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="device-category">
+                    <h3>Dahua Devices</h3>
+                    <div class="device-items">
+                        <div class="device-item" data-type="dahua" data-device="dahua-nvr">
+                            <div class="device-icon dahua-icon">📹</div>
+                            <span>Dahua NVR</span>
+                        </div>
+                        <div class="device-item" data-type="dahua" data-device="dahua-ipcamera">
+                            <div class="device-icon dahua-icon">📷</div>
+                            <span>Dahua IP Camera</span>
+                        </div>
+                        <div class="device-item" data-type="dahua" data-device="dahua-dvr">
+                            <div class="device-icon dahua-icon">📼</div>
+                            <span>Dahua DVR</span>
+                        </div>
+                        <div class="device-item" data-type="dahua" data-device="dahua-encoder">
+                            <div class="device-icon dahua-icon">📺</div>
+                            <span>Dahua Encoder</span>
+                        </div>
+                        <div class="device-item" data-type="dahua" data-device="dahua-decoder">
+                            <div class="device-icon dahua-icon">📺</div>
+                            <span>Dahua Decoder</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="device-category">
+                    <h3>Cables & Connections</h3>
+                    <div class="device-items">
+                        <div class="device-item" data-type="cable" data-device="straight-through">
+                            <div class="device-icon cable-icon">─</div>
+                            <span>Straight-Through</span>
+                        </div>
+                        <div class="device-item" data-type="cable" data-device="crossover">
+                            <div class="device-icon cable-icon">✕</div>
+                            <span>Crossover</span>
+                        </div>
+                        <div class="device-item" data-type="cable" data-device="fiber">
+                            <div class="device-icon cable-icon">💎</div>
+                            <span>Fiber Optic</span>
+                        </div>
+                        <div class="device-item" data-type="cable" data-device="console">
+                            <div class="device-icon cable-icon">🖥️</div>
+                            <span>Console Cable</span>
+                        </div>
+                        <div class="device-item" data-type="cable" data-device="serial">
+                            <div class="device-icon cable-icon">📡</div>
+                            <span>Serial Cable</span>
                         </div>
                     </div>
                 </div>
@@ -353,6 +435,37 @@
         </div>
     </div>
 
+    <!-- Community Chat Window -->
+    <div id="communityChatModal" class="modal community-modal">
+        <div class="modal-content community-content">
+            <div class="modal-header">
+                <h2>👥 IT Hadrami Community</h2>
+                <button id="closeCommunityChat" class="btn-icon">×</button>
+            </div>
+            <div class="modal-body community-body">
+                <div class="community-messages" id="communityMessages">
+                    <div class="community-message system">
+                        <div class="message-avatar">🤖</div>
+                        <div class="message-content">
+                            <div class="message-header">
+                                <span class="message-author">System</span>
+                                <span class="message-time">Just now</span>
+                            </div>
+                            <div class="message-text">Welcome to IT Hadrami Community! Share your thoughts, ask questions, and help others.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="community-input-area">
+                    <input type="text" id="communityInput" placeholder="Type your message here..." class="community-input">
+                    <button id="communitySendBtn" class="btn btn-primary">Send</button>
+                </div>
+                <div class="community-info">
+                    <p>💬 Messages are stored locally. To contact the community directly, use the WhatsApp button.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Comprehensive Educational Window -->
     <div id="educationWindow" class="modal education-modal">
         <div class="modal-content education-content">
@@ -461,6 +574,8 @@
                 </div>
                 <button class="sim-btn" id="togglePDUList">Toggle PDU List Window</button>
                 <button class="sim-btn" id="showEducationWindow">📚 Learning</button>
+                <button class="sim-btn whatsapp-btn" id="whatsappBtn" title="Contact via WhatsApp">💬 WhatsApp</button>
+                <button class="sim-btn" id="communityChatBtn" title="Community Chat">👥 Community</button>
             </div>
         </div>
     </div>
