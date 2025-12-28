@@ -1,13 +1,15 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IT Hadrami Packet Tracker - Network Configuration Tool</title>
+    <title>IT Hadrami Packet Tracker - RAK Network Learning Portal</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="auth.css">
 </head>
 <body>
-    <div class="app-container">
+    <!-- Authentication will be handled by auth.js -->
+    <div class="app-container" id="mainApp" style="display: none;">
         <!-- Header -->
         <header class="header">
             <div class="header-content">
@@ -322,10 +324,127 @@
 
     <!-- Connection Line Overlay -->
     <svg id="connectionOverlay" class="connection-overlay"></svg>
+    </div>
 
+    <!-- Footer -->
+    <footer class="app-footer" id="appFooter" style="display: none;">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="footer-logo-container">
+                    <img id="footerLogo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='40' fill='%232563eb'/%3E%3Ctext x='50' y='60' text-anchor='middle' fill='white' font-size='30' font-weight='bold'%3EIT%3C/text%3E%3C/svg%3E" alt="IT Hadrami Logo" class="footer-logo">
+                    <input type="file" id="logoUpload" accept="image/*" style="display: none;">
+                    <button id="changeLogoBtn" class="btn-icon-small" title="Change Logo">📷</button>
+                </div>
+                <div class="footer-info">
+                    <h4>IT Hadrami Packet Tracker</h4>
+                    <p>RAK Network Learning Portal</p>
+                    <p class="footer-creator">Created by IT HADRAMI</p>
+                </div>
+            </div>
+            <div class="footer-actions">
+                <button id="exportPDF" class="btn btn-primary">Export as PDF</button>
+                <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+            </div>
+        </div>
+    </footer>
+
+    <script src="auth.js"></script>
     <script src="device-icons.js"></script>
+    <script src="device-images.js"></script>
     <script src="cli-engine.js"></script>
+    <script src="ai-assistant.js"></script>
     <script src="script.js"></script>
+    <script>
+        // Initialize auth system
+        let authSystem;
+        let aiAssistant;
+        
+        // Wait for DOM
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initApp);
+        } else {
+            initApp();
+        }
+        
+        function setupAppHandlers() {
+            // Logout handler
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', () => {
+                    if (authSystem) authSystem.logout();
+                });
+            }
+            
+            // Logo upload handler
+            const changeLogoBtn = document.getElementById('changeLogoBtn');
+            const logoUpload = document.getElementById('logoUpload');
+            
+            if (changeLogoBtn && logoUpload) {
+                changeLogoBtn.addEventListener('click', () => {
+                    logoUpload.click();
+                });
+                
+                logoUpload.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                            const logoImg = document.getElementById('footerLogo');
+                            if (logoImg) {
+                                logoImg.src = event.target.result;
+                                localStorage.setItem('hadrami_logo', event.target.result);
+                            }
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+            
+            // Load saved logo
+            const savedLogo = localStorage.getItem('hadrami_logo');
+            if (savedLogo) {
+                const logoImg = document.getElementById('footerLogo');
+                if (logoImg) logoImg.src = savedLogo;
+            }
+            
+            // PDF Export
+            const exportPDFBtn = document.getElementById('exportPDF');
+            if (exportPDFBtn) {
+                exportPDFBtn.addEventListener('click', () => {
+                    if (window.networkBuilder) {
+                        window.networkBuilder.exportAsPDF();
+                    }
+                });
+            }
+        }
+        
+        function initApp() {
+            // Initialize auth system first
+            authSystem = new AuthSystem();
+            window.authSystem = authSystem;
+            
+            // If user is already logged in, setup handlers immediately
+            if (authSystem.currentUser) {
+                // Main app should already be shown by AuthSystem.init()
+                setTimeout(() => {
+                    setupAppHandlers();
+                    // Also ensure initialization happens
+                    if (typeof window.initializeApplication === 'function' && !window.networkBuilder) {
+                        window.initializeApplication();
+                    }
+                }, 500);
+            } else {
+                // Intercept showMainApp to setup handlers when user logs in
+                const originalShowMainApp = authSystem.showMainApp.bind(authSystem);
+                authSystem.showMainApp = function() {
+                    originalShowMainApp();
+                    setTimeout(() => {
+                        setupAppHandlers();
+                    }, 600);
+                };
+            }
+        }
+    </script>
 </body>
 </html>
 

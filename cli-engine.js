@@ -14,7 +14,11 @@ class CLIEngine {
         const cliOutput = document.getElementById('cliOutput');
         const clearCliBtn = document.getElementById('clearCli');
 
-        if (!cliInput || !cliOutput) return;
+        if (!cliInput || !cliOutput) {
+            // Retry if elements don't exist yet
+            setTimeout(() => this.initializeCLI(), 100);
+            return;
+        }
 
         cliInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {

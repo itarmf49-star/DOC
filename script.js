@@ -24,94 +24,151 @@ class NetworkBuilder {
     }
 
     initializeEventListeners() {
-        // Device palette drag
-        document.querySelectorAll('.device-item').forEach(item => {
-            item.addEventListener('dragstart', (e) => {
-                e.dataTransfer.setData('deviceType', item.dataset.type);
-                e.dataTransfer.setData('deviceModel', item.dataset.device);
+        // Device palette drag - try to initialize, but don't block if not found
+        const deviceItems = document.querySelectorAll('.device-item');
+        if (deviceItems.length > 0) {
+            deviceItems.forEach(item => {
+                item.draggable = true;
+                item.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('deviceType', item.dataset.type);
+                    e.dataTransfer.setData('deviceModel', item.dataset.device);
+                });
             });
-        });
+        } else {
+            console.warn('Device items not found. Will retry device items later, but continuing with buttons...');
+            // Retry device items later, but continue with button initialization
+            setTimeout(() => {
+                const retryItems = document.querySelectorAll('.device-item');
+                retryItems.forEach(item => {
+                    item.draggable = true;
+                    item.addEventListener('dragstart', (e) => {
+                        e.dataTransfer.setData('deviceType', item.dataset.type);
+                        e.dataTransfer.setData('deviceModel', item.dataset.device);
+                    });
+                });
+            }, 100);
+        }
 
         // Canvas drop
         const canvas = document.getElementById('networkCanvas');
-        canvas.addEventListener('dragover', (e) => {
-            e.preventDefault();
-        });
+        if (canvas) {
+            canvas.addEventListener('dragover', (e) => {
+                e.preventDefault();
+            });
 
-        canvas.addEventListener('drop', (e) => {
-            e.preventDefault();
-            const deviceType = e.dataTransfer.getData('deviceType');
-            const deviceModel = e.dataTransfer.getData('deviceModel');
-            const rect = canvas.getBoundingClientRect();
-            const x = (e.clientX - rect.left) / this.zoomLevel;
-            const y = (e.clientY - rect.top) / this.zoomLevel;
-            this.addDevice(deviceType, deviceModel, x, y);
-        });
+            canvas.addEventListener('drop', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const deviceType = e.dataTransfer.getData('deviceType');
+                const deviceModel = e.dataTransfer.getData('deviceModel');
+                if (deviceType && deviceModel) {
+                    const rect = canvas.getBoundingClientRect();
+                    const scrollLeft = canvas.scrollLeft;
+                    const scrollTop = canvas.scrollTop;
+                    const x = ((e.clientX - rect.left + scrollLeft) / this.zoomLevel);
+                    const y = ((e.clientY - rect.top + scrollTop) / this.zoomLevel);
+                    this.addDevice(deviceType, deviceModel, x, y);
+                }
+            });
+            
+            // Canvas click
+            canvas.addEventListener('click', (e) => {
+                if (this.currentMode === 'delete') {
+                    const device = e.target.closest('.network-device');
+                    if (device && device.dataset.id) {
+                        this.deleteDevice(device.dataset.id);
+                    }
+                } else if (this.currentMode === 'select') {
+                    const device = e.target.closest('.network-device');
+                    if (device && device.dataset.id) {
+                        this.selectDevice(device.dataset.id);
+                    } else {
+                        this.deselectDevice();
+                    }
+                }
+            });
+        } else {
+            console.warn('Canvas element not found, but continuing with button initialization');
+        }
 
         // Mode buttons
-        document.getElementById('selectMode').addEventListener('click', () => this.setMode('select'));
-        document.getElementById('connectMode').addEventListener('click', () => this.setMode('connect'));
-        document.getElementById('deleteMode').addEventListener('click', () => this.setMode('delete'));
+        const selectMode = document.getElementById('selectMode');
+        const connectMode = document.getElementById('connectMode');
+        const deleteMode = document.getElementById('deleteMode');
+        
+        if (selectMode) selectMode.addEventListener('click', () => this.setMode('select'));
+        if (connectMode) connectMode.addEventListener('click', () => this.setMode('connect'));
+        if (deleteMode) deleteMode.addEventListener('click', () => this.setMode('delete'));
 
         // Zoom buttons
-        document.getElementById('zoomIn').addEventListener('click', () => this.zoom(1.1));
-        document.getElementById('zoomOut').addEventListener('click', () => this.zoom(0.9));
-        document.getElementById('resetZoom').addEventListener('click', () => this.resetZoom());
+        const zoomIn = document.getElementById('zoomIn');
+        const zoomOut = document.getElementById('zoomOut');
+        const resetZoom = document.getElementById('resetZoom');
+        
+        if (zoomIn) zoomIn.addEventListener('click', () => this.zoom(1.1));
+        if (zoomOut) zoomOut.addEventListener('click', () => this.zoom(0.9));
+        if (resetZoom) resetZoom.addEventListener('click', () => this.resetZoom());
 
         // Department select
-        document.getElementById('departmentSelect').addEventListener('change', (e) => {
-            this.departmentType = e.target.value;
-            this.updateScript();
-        });
+        const deptSelect = document.getElementById('departmentSelect');
+        if (deptSelect) {
+            deptSelect.addEventListener('change', (e) => {
+                this.departmentType = e.target.value;
+                this.updateScript();
+            });
+        }
 
         // Tab switching
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const tab = btn.dataset.tab;
-                this.switchTab(tab);
+                if (tab) this.switchTab(tab);
             });
         });
 
         // Action buttons
-        document.getElementById('exportScript').addEventListener('click', () => this.exportScript());
-        document.getElementById('clearCanvas').addEventListener('click', () => this.clearCanvas());
-        document.getElementById('saveProject').addEventListener('click', () => this.saveProject());
-        document.getElementById('loadProject').addEventListener('click', () => this.loadProject());
-        document.getElementById('copyScript').addEventListener('click', () => this.copyScript());
-        document.getElementById('downloadScript').addEventListener('click', () => this.downloadScript());
-        document.getElementById('scriptFormat').addEventListener('change', () => this.updateScript());
-
-        // Canvas click
-        canvas.addEventListener('click', (e) => {
-            if (this.currentMode === 'delete') {
-                const device = e.target.closest('.network-device');
-                if (device) {
-                    this.deleteDevice(device.dataset.id);
-                }
-            } else if (this.currentMode === 'select') {
-                const device = e.target.closest('.network-device');
-                if (device) {
-                    this.selectDevice(device.dataset.id);
-                } else {
-                    this.deselectDevice();
-                }
-            }
-        });
+        const exportBtn = document.getElementById('exportScript');
+        const clearBtn = document.getElementById('clearCanvas');
+        const saveBtn = document.getElementById('saveProject');
+        const loadBtn = document.getElementById('loadProject');
+        const copyBtn = document.getElementById('copyScript');
+        const downloadBtn = document.getElementById('downloadScript');
+        const scriptFormat = document.getElementById('scriptFormat');
+        
+        if (exportBtn) exportBtn.addEventListener('click', () => this.exportScript());
+        if (clearBtn) clearBtn.addEventListener('click', () => this.clearCanvas());
+        if (saveBtn) saveBtn.addEventListener('click', () => this.saveProject());
+        if (loadBtn) loadBtn.addEventListener('click', () => this.loadProject());
+        if (copyBtn) copyBtn.addEventListener('click', () => this.copyScript());
+        if (downloadBtn) downloadBtn.addEventListener('click', () => this.downloadScript());
+        if (scriptFormat) scriptFormat.addEventListener('change', () => this.updateScript());
     }
 
     initializeCanvas() {
         const canvas = document.getElementById('networkCanvas');
-        canvas.addEventListener('mousedown', (e) => this.handleMouseDown(e));
-        canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
-        canvas.addEventListener('mouseup', (e) => this.handleMouseUp(e));
-        canvas.addEventListener('scroll', () => this.updateConnections());
+        if (canvas) {
+            canvas.addEventListener('mousedown', (e) => this.handleMouseDown(e));
+            canvas.addEventListener('scroll', () => this.updateConnections());
+        } else {
+            console.warn('Canvas not found for mouse event initialization');
+        }
+        
+        // Attach global mouse events for dragging (works even if mouse leaves canvas)
+        document.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+        document.addEventListener('mouseup', (e) => this.handleMouseUp(e));
     }
 
     handleMouseDown(e) {
+        // Don't handle if clicking on a device (device handles its own events)
+        if (e.target.closest('.network-device')) {
+            return;
+        }
+        
         const canvas = document.getElementById('networkCanvas');
         if (this.currentMode === 'connect') {
             const connectionPoint = e.target.closest('.connection-point');
             if (connectionPoint) {
+                e.stopPropagation();
                 this.isDrawingConnection = true;
                 const deviceElement = connectionPoint.closest('.network-device');
                 this.connectionStart = {
@@ -119,18 +176,6 @@ class NetworkBuilder {
                     point: connectionPoint.dataset.side
                 };
                 canvas.classList.add('drawing-connection');
-            }
-        } else if (this.currentMode === 'select') {
-            const device = e.target.closest('.network-device');
-            if (device && !e.target.closest('.connection-point')) {
-                this.draggedDevice = device;
-                const rect = canvas.getBoundingClientRect();
-                const scrollLeft = canvas.scrollLeft;
-                const scrollTop = canvas.scrollTop;
-                const deviceX = parseFloat(device.style.left || 0) * this.zoomLevel;
-                const deviceY = parseFloat(device.style.top || 0) * this.zoomLevel;
-                this.offsetX = (e.clientX - rect.left + scrollLeft) - deviceX;
-                this.offsetY = (e.clientY - rect.top + scrollTop) - deviceY;
             }
         }
     }
@@ -274,16 +319,24 @@ class NetworkBuilder {
         deviceElement.style.transform = `scale(${this.zoomLevel})`;
         deviceElement.style.transformOrigin = 'top left';
 
-        // Use SVG icons if available, otherwise fallback to emoji
+        // Use real device images if available
         let iconHTML = '';
-        if (typeof getDeviceIcon === 'function') {
+        if (typeof getDeviceImage === 'function') {
+            const deviceImage = getDeviceImage(device.type, device.model);
+            if (deviceImage && deviceImage.image) {
+                iconHTML = `<div class="network-device-icon svg-icon real-device-icon">${deviceImage.image}</div>`;
+            }
+        }
+        
+        // Fallback to SVG icons
+        if (!iconHTML && typeof getDeviceIcon === 'function') {
             const svgIcon = getDeviceIcon(device.type, device.model);
             if (svgIcon) {
                 iconHTML = `<div class="network-device-icon svg-icon">${svgIcon}</div>`;
             }
         }
         
-        // Fallback to emoji icons
+        // Final fallback to emoji icons
         if (!iconHTML) {
             const icons = {
                 router: '🔄',
@@ -315,11 +368,27 @@ class NetworkBuilder {
             this.showDeviceInfo(device);
         });
 
+        // Handle device interaction - allow both selection and dragging
         deviceElement.addEventListener('mousedown', (e) => {
+            e.stopPropagation(); // Prevent canvas from handling this
+            
             if (this.currentMode === 'select') {
                 this.selectDevice(device.id);
+                // Start dragging
+                this.draggedDevice = deviceElement;
+                const canvas = document.getElementById('networkCanvas');
+                const rect = canvas.getBoundingClientRect();
+                const scrollLeft = canvas.scrollLeft;
+                const scrollTop = canvas.scrollTop;
+                const deviceX = parseFloat(deviceElement.style.left || 0) * this.zoomLevel;
+                const deviceY = parseFloat(deviceElement.style.top || 0) * this.zoomLevel;
+                this.offsetX = (e.clientX - rect.left + scrollLeft) - deviceX;
+                this.offsetY = (e.clientY - rect.top + scrollTop) - deviceY;
             }
         });
+        
+        // Make device draggable
+        deviceElement.style.cursor = 'move';
 
         canvas.appendChild(deviceElement);
         this.updateDeviceElement(device);
@@ -351,8 +420,12 @@ class NetworkBuilder {
             }
             this.showDeviceProperties();
             this.showHardwareView();
-            if (this.cliEngine) {
-                this.cliEngine.setDevice(this.selectedDevice);
+            if (this.cliEngine && typeof this.cliEngine.setDevice === 'function') {
+                try {
+                    this.cliEngine.setDevice(this.selectedDevice);
+                } catch (error) {
+                    console.warn('Error setting device in CLI:', error);
+                }
             }
         }
     }
@@ -382,22 +455,6 @@ class NetworkBuilder {
         this.updateConnections();
         this.updateScript();
         this.updateConnectionsList();
-    }
-
-    addConnection(fromDeviceId, fromPoint, toDeviceId, toPoint) {
-        const connection = {
-            id: `conn-${Date.now()}`,
-            fromDevice: fromDeviceId,
-            fromPoint,
-            toDevice: toDeviceId,
-            toPoint,
-            type: 'ethernet',
-            bandwidth: '1000'
-        };
-        this.connections.push(connection);
-        this.updateConnections();
-        this.updateConnectionsList();
-        this.updateScript();
     }
 
     updateConnections() {
@@ -554,6 +611,11 @@ class NetworkBuilder {
         if (!this.selectedDevice) return;
 
         const propsDiv = document.getElementById('deviceProperties');
+        if (!propsDiv) {
+            console.warn('Device properties div not found');
+            return;
+        }
+        
         const device = this.selectedDevice;
         
         let html = `
@@ -564,17 +626,17 @@ class NetworkBuilder {
             <div class="property-group">
                 <label>Hostname</label>
                 <input type="text" value="${device.properties.hostname}" 
-                       data-property="hostname" onchange="networkBuilder.updateProperty('hostname', this.value)">
+                       data-property="hostname" class="property-input">
             </div>
             <div class="property-group">
                 <label>IP Address</label>
                 <input type="text" value="${device.properties.ip}" 
-                       data-property="ip" onchange="networkBuilder.updateProperty('ip', this.value)">
+                       data-property="ip" class="property-input">
             </div>
             <div class="property-group">
                 <label>Subnet Mask</label>
                 <input type="text" value="${device.properties.subnet}" 
-                       data-property="subnet" onchange="networkBuilder.updateProperty('subnet', this.value)">
+                       data-property="subnet" class="property-input">
             </div>
         `;
 
@@ -582,7 +644,7 @@ class NetworkBuilder {
             html += `
                 <div class="property-group">
                     <label>Routing Protocol</label>
-                    <select data-property="routing" onchange="networkBuilder.updateProperty('routing', this.value)">
+                    <select data-property="routing" class="property-input">
                         <option value="static" ${device.properties.routing === 'static' ? 'selected' : ''}>Static</option>
                         <option value="rip" ${device.properties.routing === 'rip' ? 'selected' : ''}>RIP</option>
                         <option value="ospf" ${device.properties.routing === 'ospf' ? 'selected' : ''}>OSPF</option>
@@ -595,7 +657,7 @@ class NetworkBuilder {
                 <div class="property-group">
                     <label>VLANs (comma-separated)</label>
                     <input type="text" value="${device.properties.vlans.join(',')}" 
-                           data-property="vlans" onchange="networkBuilder.updateProperty('vlans', this.value)">
+                           data-property="vlans" class="property-input">
                 </div>
             `;
             // Add TP-Link Omada specific properties if it's a TP-Link switch
@@ -603,7 +665,7 @@ class NetworkBuilder {
                 html += `
                     <div class="property-group">
                         <label>Omada Mode</label>
-                        <select data-property="omadaMode" onchange="networkBuilder.updateProperty('omadaMode', this.value)">
+                        <select data-property="omadaMode" class="property-input">
                             <option value="standalone" ${device.properties.omadaMode === 'standalone' ? 'selected' : ''}>Standalone</option>
                             <option value="controller-managed" ${device.properties.omadaMode === 'controller-managed' ? 'selected' : ''}>Controller Managed</option>
                         </select>
@@ -611,7 +673,7 @@ class NetworkBuilder {
                     <div class="property-group">
                         <label>Omada Controller IP (if managed)</label>
                         <input type="text" value="${device.properties.omadaController || ''}" 
-                               data-property="omadaController" onchange="networkBuilder.updateProperty('omadaController', this.value)"
+                               data-property="omadaController" class="property-input"
                                placeholder="192.168.0.1">
                     </div>
                 `;
@@ -621,11 +683,11 @@ class NetworkBuilder {
                 <div class="property-group">
                     <label>SIP Port</label>
                     <input type="text" value="${device.properties.sipPort || '5060'}" 
-                           data-property="sipPort" onchange="networkBuilder.updateProperty('sipPort', this.value)">
+                           data-property="sipPort" class="property-input">
                 </div>
                 <div class="property-group">
                     <label>Codec</label>
-                    <select data-property="codec" onchange="networkBuilder.updateProperty('codec', this.value)">
+                    <select data-property="codec" class="property-input">
                         <option value="G.711" ${device.properties.codec === 'G.711' ? 'selected' : ''}>G.711</option>
                         <option value="G.729" ${device.properties.codec === 'G.729' ? 'selected' : ''}>G.729</option>
                         <option value="G.722" ${device.properties.codec === 'G.722' ? 'selected' : ''}>G.722</option>
@@ -637,28 +699,28 @@ class NetworkBuilder {
                 <div class="property-group">
                     <label>Extension</label>
                     <input type="text" value="${device.properties.extension || ''}" 
-                           data-property="extension" onchange="networkBuilder.updateProperty('extension', this.value)"
+                           data-property="extension" class="property-input"
                            placeholder="1001">
                 </div>
                 <div class="property-group">
                     <label>SIP Server</label>
                     <input type="text" value="${device.properties.sipServer || ''}" 
-                           data-property="sipServer" onchange="networkBuilder.updateProperty('sipServer', this.value)"
+                           data-property="sipServer" class="property-input"
                            placeholder="192.168.1.100">
                 </div>
                 <div class="property-group">
                     <label>SIP Username</label>
                     <input type="text" value="${device.properties.sipUsername || ''}" 
-                           data-property="sipUsername" onchange="networkBuilder.updateProperty('sipUsername', this.value)">
+                           data-property="sipUsername" class="property-input">
                 </div>
                 <div class="property-group">
                     <label>SIP Password</label>
                     <input type="password" value="${device.properties.sipPassword || ''}" 
-                           data-property="sipPassword" onchange="networkBuilder.updateProperty('sipPassword', this.value)">
+                           data-property="sipPassword" class="property-input">
                 </div>
                 <div class="property-group">
                     <label>Codec</label>
-                    <select data-property="codec" onchange="networkBuilder.updateProperty('codec', this.value)">
+                    <select data-property="codec" class="property-input">
                         <option value="G.711" ${device.properties.codec === 'G.711' ? 'selected' : ''}>G.711</option>
                         <option value="G.729" ${device.properties.codec === 'G.729' ? 'selected' : ''}>G.729</option>
                         <option value="G.722" ${device.properties.codec === 'G.722' ? 'selected' : ''}>G.722</option>
@@ -674,12 +736,23 @@ class NetworkBuilder {
                 <div class="property-group">
                     <label>Capacity</label>
                     <input type="number" value="${device.properties.capacity}" 
-                           data-property="capacity" onchange="networkBuilder.updateProperty('capacity', this.value)">
+                           data-property="capacity" class="property-input">
                 </div>
             `;
         }
 
         propsDiv.innerHTML = html;
+        
+        // Attach event listeners using event delegation
+        const propertyInputs = propsDiv.querySelectorAll('.property-input, [data-property]');
+        propertyInputs.forEach(input => {
+            input.addEventListener('change', (e) => {
+                const property = e.target.dataset.property || e.target.getAttribute('data-property');
+                if (property) {
+                    this.updateProperty(property, e.target.value);
+                }
+            });
+        });
     }
 
     updateProperty(property, value) {
@@ -897,6 +970,100 @@ class NetworkBuilder {
         this.exportScript();
     }
 
+    exportAsPDF() {
+        // Create PDF content
+        const content = this.generatePDFContent();
+        
+        // Create a new window for PDF
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) {
+            alert('Please allow popups to export PDF');
+            return;
+        }
+        
+        printWindow.document.write(content);
+        printWindow.document.close();
+        
+        setTimeout(() => {
+            printWindow.print();
+        }, 250);
+    }
+
+    generatePDFContent() {
+        let html = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Network Project - IT Hadrami Packet Tracker</title>
+                <style>
+                    body { font-family: Arial, sans-serif; padding: 2rem; background: white; color: #333; }
+                    h1 { color: #2563eb; border-bottom: 3px solid #2563eb; padding-bottom: 0.5rem; }
+                    h2 { color: #1e293b; margin-top: 2rem; }
+                    .device-list { margin: 1rem 0; }
+                    .device-item { padding: 0.75rem; border-bottom: 1px solid #ddd; background: #f8f9fa; margin-bottom: 0.5rem; border-radius: 0.25rem; }
+                    .script-output { background: #1e293b; color: #00ff00; padding: 1rem; border-radius: 0.5rem; font-family: 'Courier New', monospace; white-space: pre-wrap; overflow-x: auto; }
+                    .info-box { background: #e3f2fd; padding: 1rem; border-radius: 0.5rem; margin: 1rem 0; }
+                    hr { border: none; border-top: 2px solid #ddd; margin: 2rem 0; }
+                </style>
+            </head>
+            <body>
+                <h1>🌐 IT Hadrami Packet Tracker</h1>
+                <h2>Network Project Report</h2>
+                <div class="info-box">
+                    <p><strong>Department:</strong> ${this.departmentType}</p>
+                    <p><strong>Generated:</strong> ${new Date().toLocaleString()}</p>
+                    <p><strong>Total Devices:</strong> ${this.devices.length}</p>
+                    <p><strong>Total Connections:</strong> ${this.connections.length}</p>
+                </div>
+                <h2>Devices Configuration</h2>
+                <div class="device-list">
+        `;
+        
+        this.devices.forEach(device => {
+            html += `
+                <div class="device-item">
+                    <strong>${device.label}</strong> (${device.type.toUpperCase()})<br>
+                    <small>IP: ${device.properties.ip} | Subnet: ${device.properties.subnet} | Hostname: ${device.properties.hostname}</small>
+                </div>
+            `;
+        });
+        
+        html += `
+                </div>
+                <h2>Network Connections</h2>
+                <div class="device-list">
+        `;
+        
+        this.connections.forEach(conn => {
+            const fromDevice = this.devices.find(d => d.id === conn.fromDevice);
+            const toDevice = this.devices.find(d => d.id === conn.toDevice);
+            if (fromDevice && toDevice) {
+                html += `
+                    <div class="device-item">
+                        <strong>${fromDevice.label}</strong> ↔ <strong>${toDevice.label}</strong><br>
+                        <small>Cable Type: ${conn.cableType || 'ethernet'} | Bandwidth: ${conn.bandwidth || '1000'} Mbps</small>
+                    </div>
+                `;
+            }
+        });
+        
+        html += `
+                </div>
+                <h2>Configuration Script</h2>
+                <pre class="script-output">${document.getElementById('generatedScript')?.textContent || 'No script generated'}</pre>
+                <hr>
+                <p style="text-align: center; color: #666; margin-top: 2rem;">
+                    Created with <strong>IT Hadrami Packet Tracker</strong><br>
+                    RAK Network Learning Portal<br>
+                    © ${new Date().getFullYear()} IT HADRAMI
+                </p>
+            </body>
+            </html>
+        `;
+        
+        return html;
+    }
+
     saveProject() {
         const project = {
             devices: this.devices,
@@ -968,11 +1135,22 @@ class NetworkBuilder {
             document.getElementById('deviceProperties').innerHTML = '<p class="placeholder">Select a device to configure</p>';
         }
     }
-}
 
     initializeCLI() {
+        // Wait for CLIEngine to be available
         if (typeof CLIEngine !== 'undefined') {
-            this.cliEngine = new CLIEngine(this);
+            try {
+                this.cliEngine = new CLIEngine(this);
+            } catch (error) {
+                console.warn('CLI Engine initialization failed:', error);
+            }
+        } else {
+            // Retry after a short delay
+            setTimeout(() => {
+                if (typeof CLIEngine !== 'undefined') {
+                    this.cliEngine = new CLIEngine(this);
+                }
+            }, 100);
         }
     }
 
@@ -1234,20 +1412,91 @@ class NetworkBuilder {
     }
 }
 
-// Initialize the application
-const networkBuilder = new NetworkBuilder();
+// Initialize the application when DOM is ready
+let networkBuilder;
 
-// Make device items draggable
-document.querySelectorAll('.device-item').forEach(item => {
-    item.draggable = true;
-});
-
-// Handle connection overlay mouse events
-document.getElementById('connectionOverlay').addEventListener('mousemove', (e) => {
-    if (networkBuilder.isDrawingConnection) {
-        networkBuilder.drawTemporaryConnection(e);
+function initializeApplication() {
+    // Check if main app exists and is visible
+    const mainApp = document.getElementById('mainApp');
+    if (!mainApp) {
+        console.log('Main app element not found, cannot initialize');
+        return;
     }
-});
+    
+    // Check both inline style and computed style to be safe
+    const inlineDisplay = mainApp.style.display;
+    const computedStyle = window.getComputedStyle(mainApp);
+    const computedDisplay = computedStyle.display;
+    
+    // If display is 'none' in either inline or computed style, don't initialize
+    if (inlineDisplay === 'none' || computedDisplay === 'none') {
+        console.log('Main app not visible yet (inline:', inlineDisplay, ', computed:', computedDisplay, '), skipping initialization');
+        return;
+    }
+    
+    console.log('Main app is visible (inline:', inlineDisplay, ', computed:', computedDisplay, '), proceeding with initialization');
+    
+    try {
+        // Prevent multiple initializations
+        if (window.networkBuilder) {
+            console.log('Network Builder already initialized');
+            return;
+        }
+        
+        console.log('Initializing Network Builder...');
+        networkBuilder = new NetworkBuilder();
+        
+        // Make device items draggable (if not already done in initializeEventListeners)
+        setTimeout(() => {
+            document.querySelectorAll('.device-item').forEach(item => {
+                if (!item.hasAttribute('draggable')) {
+                    item.draggable = true;
+                }
+            });
+        }, 100);
+
+        // Handle connection overlay mouse events
+        const connectionOverlay = document.getElementById('connectionOverlay');
+        if (connectionOverlay) {
+            connectionOverlay.addEventListener('mousemove', (e) => {
+                if (networkBuilder && networkBuilder.isDrawingConnection) {
+                    networkBuilder.drawTemporaryConnection(e);
+                }
+            });
+        }
+        
+        // Make networkBuilder globally accessible
+        window.networkBuilder = networkBuilder;
+        
+        // Initialize animated background
+        setTimeout(() => {
+            initAnimatedBackground();
+        }, 200);
+        
+        // Verify buttons are working
+        setTimeout(() => {
+            const testButton = document.getElementById('selectMode');
+            if (testButton) {
+                console.log('✓ Buttons found, event listeners should be attached');
+            } else {
+                console.warn('⚠ Buttons not found!');
+            }
+        }, 300);
+        
+        console.log('✓ Network Builder initialized successfully');
+    } catch (error) {
+        console.error('✗ Error initializing Network Builder:', error);
+        console.error('Stack trace:', error.stack);
+        // Try to show error to user
+        alert('Error initializing application. Please check console for details.');
+    }
+}
+
+// Make initializeApplication globally accessible
+window.initializeApplication = initializeApplication;
+
+// Don't auto-initialize - wait for main app to be shown
+// initializeApplication() will be called by auth.js when user logs in
 
 // Animated Background Canvas
 function initAnimatedBackground() {
@@ -1338,10 +1587,5 @@ function initAnimatedBackground() {
     animate();
 }
 
-// Initialize animated background when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initAnimatedBackground);
-} else {
-    initAnimatedBackground();
-}
+// Animated background is initialized by initializeApplication() when main app is shown
 
