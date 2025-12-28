@@ -499,6 +499,14 @@ class NetworkBuilder {
                 line.setAttribute('data-connection-id', conn.id);
                 line.style.pointerEvents = 'stroke';
                 line.style.cursor = 'pointer';
+                
+                // Apply cable type styling
+                const cableType = conn.cableType || 'straight-through';
+                const cableInfo = this.getCableInfo(cableType);
+                line.setAttribute('data-cable-type', cableType);
+                line.style.stroke = cableInfo.color;
+                line.style.strokeWidth = '3';
+                line.setAttribute('title', `${cableInfo.name}: ${cableInfo.description}`);
                 line.addEventListener('click', () => {
                     if (this.currentMode === 'delete') {
                         this.connections = this.connections.filter(c => c.id !== conn.id);
@@ -1158,6 +1166,9 @@ class NetworkBuilder {
         const helpButton = document.getElementById('helpButton');
         const closeModal = document.getElementById('closeModal');
         const modal = document.getElementById('instructionModal');
+        const showEducationBtn = document.getElementById('showEducationWindow');
+        const closeEducationBtn = document.getElementById('closeEducationWindow');
+        const educationWindow = document.getElementById('educationWindow');
 
         if (helpButton) {
             helpButton.addEventListener('click', () => {
@@ -1175,6 +1186,36 @@ class NetworkBuilder {
                 }
             });
         }
+
+        // Education Window
+        if (showEducationBtn && educationWindow) {
+            showEducationBtn.addEventListener('click', () => {
+                this.showEducationWindow();
+            });
+        }
+
+        if (closeEducationBtn && educationWindow) {
+            closeEducationBtn.addEventListener('click', () => {
+                educationWindow.classList.remove('active');
+            });
+            educationWindow.addEventListener('click', (e) => {
+                if (e.target === educationWindow) {
+                    educationWindow.classList.remove('active');
+                }
+            });
+        }
+
+        // Education tabs
+        document.querySelectorAll('.edu-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.dataset.tab;
+                document.querySelectorAll('.edu-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.edu-tab-content').forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                const content = document.getElementById(`edu-${tabName}`);
+                if (content) content.classList.add('active');
+            });
+        });
     }
 
     initializeCheatSheet() {
@@ -1304,8 +1345,425 @@ class NetworkBuilder {
             <p>Use the CLI Terminal tab to configure devices using command-line interface. Type "help" in the terminal for available commands.</p>
             <h3>Hardware View</h3>
             <p>View physical ports and hardware specifications of selected devices.</p>
+            <h3>Learning Center</h3>
+            <p>Click the "📚 Learning Center" button in the header to access comprehensive guides on devices, cables, commands, and programming examples.</p>
         `;
         modal.classList.add('active');
+    }
+
+    showEducationWindow() {
+        const educationWindow = document.getElementById('educationWindow');
+        if (!educationWindow) return;
+
+        // Populate devices tab
+        this.populateDevicesEducation();
+        
+        // Populate cables tab
+        this.populateCablesEducation();
+        
+        // Populate commands tab
+        this.populateCommandsEducation();
+        
+        // Populate programming tab
+        this.populateProgrammingEducation();
+
+        educationWindow.classList.add('active');
+    }
+
+    populateDevicesEducation() {
+        const container = document.querySelector('#edu-devices .device-education-grid');
+        if (!container) return;
+
+        const devices = [
+            {
+                type: 'router',
+                name: 'Router',
+                icon: '🔄',
+                description: 'A router connects multiple networks and routes data packets between them. It operates at Layer 3 (Network Layer) of the OSI model.',
+                features: [
+                    'Inter-network routing',
+                    'IP address assignment',
+                    'NAT (Network Address Translation)',
+                    'Firewall capabilities',
+                    'VPN support'
+                ],
+                ports: 'Multiple Ethernet ports, Serial ports for WAN',
+                useCases: [
+                    'Connecting LAN to WAN',
+                    'Internet gateway',
+                    'Inter-VLAN routing',
+                    'Site-to-site VPN'
+                ]
+            },
+            {
+                type: 'switch',
+                name: 'Switch',
+                icon: '🔀',
+                description: 'A switch connects devices on a local area network (LAN) and forwards data packets between them. It operates at Layer 2 (Data Link Layer).',
+                features: [
+                    'MAC address learning',
+                    'VLAN support',
+                    'Port security',
+                    'STP (Spanning Tree Protocol)',
+                    'Link aggregation'
+                ],
+                ports: '8-48 Ethernet ports (varies by model)',
+                useCases: [
+                    'Connecting multiple devices in a LAN',
+                    'Creating VLANs',
+                    'Network segmentation',
+                    'High-speed data transfer'
+                ]
+            },
+            {
+                type: 'pc',
+                name: 'PC / Computer',
+                icon: '💻',
+                description: 'A personal computer or workstation that connects to the network to access resources and services.',
+                features: [
+                    'Network interface card (NIC)',
+                    'IP configuration',
+                    'DHCP client',
+                    'DNS resolution'
+                ],
+                ports: 'Ethernet port (RJ-45)',
+                useCases: [
+                    'End-user workstation',
+                    'File sharing',
+                    'Internet access',
+                    'Application hosting'
+                ]
+            },
+            {
+                type: 'server',
+                name: 'Server',
+                icon: '🖥️',
+                description: 'A powerful computer that provides services, resources, or data to other devices on the network.',
+                features: [
+                    'High-performance hardware',
+                    'Multiple network interfaces',
+                    'Service hosting (Web, DNS, DHCP, etc.)',
+                    'Data storage and backup'
+                ],
+                ports: 'Multiple Ethernet ports',
+                useCases: [
+                    'Web server',
+                    'File server',
+                    'Database server',
+                    'DNS/DHCP server'
+                ]
+            },
+            {
+                type: 'ipbx',
+                name: 'IPBX / VoIP Server',
+                icon: '☎️',
+                description: 'An IP Private Branch Exchange manages VoIP calls and provides telephony services over IP networks.',
+                features: [
+                    'SIP protocol support',
+                    'Call routing',
+                    'Voicemail',
+                    'Conference calling',
+                    'Integration with PSTN'
+                ],
+                ports: 'Ethernet ports, SIP trunk connections',
+                useCases: [
+                    'Business phone system',
+                    'VoIP call management',
+                    'Unified communications',
+                    'Call center operations'
+                ]
+            },
+            {
+                type: 'ipphone',
+                name: 'IP Phone',
+                icon: '📞',
+                description: 'A telephone that uses Voice over IP (VoIP) technology to make calls over an IP network instead of traditional phone lines.',
+                features: [
+                    'SIP client',
+                    'HD voice quality',
+                    'LCD display',
+                    'Multiple line support'
+                ],
+                ports: 'Ethernet port (RJ-45)',
+                useCases: [
+                    'Business communications',
+                    'VoIP calling',
+                    'Remote work',
+                    'Cost-effective telephony'
+                ]
+            }
+        ];
+
+        container.innerHTML = devices.map(device => `
+            <div class="device-edu-card">
+                <div class="device-edu-header">
+                    <span class="device-edu-icon">${device.icon}</span>
+                    <h3>${device.name}</h3>
+                </div>
+                <p class="device-edu-description">${device.description}</p>
+                <div class="device-edu-section">
+                    <h4>Key Features:</h4>
+                    <ul>
+                        ${device.features.map(f => `<li>${f}</li>`).join('')}
+                    </ul>
+                </div>
+                <div class="device-edu-section">
+                    <h4>Ports:</h4>
+                    <p>${device.ports}</p>
+                </div>
+                <div class="device-edu-section">
+                    <h4>Common Use Cases:</h4>
+                    <ul>
+                        ${device.useCases.map(u => `<li>${u}</li>`).join('')}
+                    </ul>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    populateCablesEducation() {
+        const container = document.querySelector('#edu-cables .cable-education-grid');
+        if (!container) return;
+
+        const cableTypes = ['straight-through', 'crossover', 'serial', 'fiber', 'console'];
+        
+        container.innerHTML = cableTypes.map(cableType => {
+            const info = this.getCableInfo(cableType);
+            return `
+                <div class="cable-edu-card" style="border-left: 4px solid ${info.color}">
+                    <div class="cable-edu-header">
+                        <span class="cable-edu-icon">${info.icon}</span>
+                        <h3>${info.name}</h3>
+                    </div>
+                    <p class="cable-edu-description">${info.description}</p>
+                    <div class="cable-edu-section">
+                        <h4>Pinout:</h4>
+                        <p>${info.pinout}</p>
+                    </div>
+                    <div class="cable-edu-section">
+                        <h4>When to Use:</h4>
+                        <ul>
+                            ${info.useCases.map(u => `<li>${u}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div class="cable-edu-action">
+                        <strong>Action:</strong> ${this.getCableAction(cableType)}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    getCableAction(cableType) {
+        const actions = {
+            'straight-through': 'Automatically selected when connecting different device types (PC↔Switch, Router↔Switch). Ensures proper signal transmission between dissimilar devices.',
+            'crossover': 'Automatically selected when connecting similar devices (Switch↔Switch, PC↔PC). Crosses transmit and receive pairs internally.',
+            'serial': 'Used for WAN connections between routers. Requires DCE/DTE configuration. One router must be configured as DCE (provides clocking).',
+            'fiber': 'Used for high-speed, long-distance connections. Immune to electromagnetic interference. Requires fiber-compatible ports on devices.',
+            'console': 'Used for initial device configuration. Connect to console port for out-of-band management. Does not require network connectivity.'
+        };
+        return actions[cableType] || 'Standard network connection.';
+    }
+
+    populateCommandsEducation() {
+        const container = document.querySelector('#edu-commands .command-education-content');
+        if (!container) return;
+
+        container.innerHTML = `
+            <div class="command-category">
+                <h3>🔄 Router Commands (Cisco IOS)</h3>
+                <div class="command-list">
+                    <div class="command-item">
+                        <code>enable</code>
+                        <p>Enter privileged EXEC mode (requires password)</p>
+                    </div>
+                    <div class="command-item">
+                        <code>configure terminal</code> or <code>conf t</code>
+                        <p>Enter global configuration mode</p>
+                    </div>
+                    <div class="command-item">
+                        <code>interface gigabitethernet 0/0</code> or <code>int g0/0</code>
+                        <p>Enter interface configuration mode</p>
+                    </div>
+                    <div class="command-item">
+                        <code>ip address 192.168.1.1 255.255.255.0</code>
+                        <p>Configure IP address and subnet mask</p>
+                    </div>
+                    <div class="command-item">
+                        <code>no shutdown</code>
+                        <p>Enable the interface</p>
+                    </div>
+                    <div class="command-item">
+                        <code>router ospf 1</code>
+                        <p>Enable OSPF routing protocol</p>
+                    </div>
+                    <div class="command-item">
+                        <code>network 192.168.1.0 0.0.0.255 area 0</code>
+                        <p>Advertise network in OSPF</p>
+                    </div>
+                    <div class="command-item">
+                        <code>show ip route</code>
+                        <p>Display routing table</p>
+                    </div>
+                    <div class="command-item">
+                        <code>show ip interface brief</code>
+                        <p>Display interface status</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="command-category">
+                <h3>🔀 Switch Commands (Cisco IOS)</h3>
+                <div class="command-list">
+                    <div class="command-item">
+                        <code>vlan 10</code>
+                        <p>Create VLAN 10</p>
+                    </div>
+                    <div class="command-item">
+                        <code>name Sales</code>
+                        <p>Name the VLAN</p>
+                    </div>
+                    <div class="command-item">
+                        <code>interface range fastethernet 0/1-10</code>
+                        <p>Configure multiple interfaces</p>
+                    </div>
+                    <div class="command-item">
+                        <code>switchport mode access</code>
+                        <p>Set port as access port</p>
+                    </div>
+                    <div class="command-item">
+                        <code>switchport access vlan 10</code>
+                        <p>Assign port to VLAN 10</p>
+                    </div>
+                    <div class="command-item">
+                        <code>switchport mode trunk</code>
+                        <p>Set port as trunk port</p>
+                    </div>
+                    <div class="command-item">
+                        <code>switchport trunk allowed vlan 10,20,30</code>
+                        <p>Allow specific VLANs on trunk</p>
+                    </div>
+                    <div class="command-item">
+                        <code>show vlan</code>
+                        <p>Display VLAN information</p>
+                    </div>
+                    <div class="command-item">
+                        <code>show mac address-table</code>
+                        <p>Display MAC address table</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="command-category">
+                <h3>☎️ IPBX / VoIP Commands</h3>
+                <div class="command-list">
+                    <div class="command-item">
+                        <code>sip register</code>
+                        <p>Register SIP extension</p>
+                    </div>
+                    <div class="command-item">
+                        <code>extension 1001</code>
+                        <p>Configure extension number</p>
+                    </div>
+                    <div class="command-item">
+                        <code>sip server 192.168.1.10</code>
+                        <p>Set SIP server address</p>
+                    </div>
+                    <div class="command-item">
+                        <code>codec g711</code>
+                        <p>Set audio codec (G.711, G.729, etc.)</p>
+                    </div>
+                    <div class="command-item">
+                        <code>show sip status</code>
+                        <p>Display SIP registration status</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    populateProgrammingEducation() {
+        const container = document.querySelector('#edu-programming .programming-education-content');
+        if (!container) return;
+
+        container.innerHTML = `
+            <div class="programming-example">
+                <h3>🔄 Router Configuration Example</h3>
+                <div class="code-example">
+                    <pre><code>Router> enable
+Router# configure terminal
+Router(config)# hostname R1
+R1(config)# interface gigabitethernet 0/0
+R1(config-if)# ip address 192.168.1.1 255.255.255.0
+R1(config-if)# no shutdown
+R1(config-if)# exit
+R1(config)# router ospf 1
+R1(config-router)# network 192.168.1.0 0.0.0.255 area 0
+R1(config-router)# end
+R1# copy running-config startup-config</code></pre>
+                </div>
+                <p><strong>Explanation:</strong> This configures a router with IP address 192.168.1.1/24 on interface G0/0, enables OSPF routing, and saves the configuration.</p>
+            </div>
+
+            <div class="programming-example">
+                <h3>🔀 Switch VLAN Configuration Example</h3>
+                <div class="code-example">
+                    <pre><code>Switch> enable
+Switch# configure terminal
+Switch(config)# vlan 10
+Switch(config-vlan)# name Sales
+Switch(config-vlan)# exit
+Switch(config)# vlan 20
+Switch(config-vlan)# name Marketing
+Switch(config-vlan)# exit
+Switch(config)# interface range fastethernet 0/1-10
+Switch(config-if-range)# switchport mode access
+Switch(config-if-range)# switchport access vlan 10
+Switch(config-if-range)# exit
+Switch(config)# interface fastethernet 0/24
+Switch(config-if)# switchport mode trunk
+Switch(config-if)# switchport trunk allowed vlan 10,20
+Switch(config-if)# end
+Switch# show vlan</code></pre>
+                </div>
+                <p><strong>Explanation:</strong> Creates VLANs 10 (Sales) and 20 (Marketing), assigns ports 1-10 to VLAN 10, and configures port 24 as a trunk carrying both VLANs.</p>
+            </div>
+
+            <div class="programming-example">
+                <h3>☎️ IP Phone Configuration Example</h3>
+                <div class="code-example">
+                    <pre><code>IPPhone> configure
+IPPhone(config)# extension 1001
+IPPhone(config)# sip server 192.168.1.10
+IPPhone(config)# sip username 1001
+IPPhone(config)# sip password mypassword
+IPPhone(config)# codec g711
+IPPhone(config)# register
+IPPhone# show sip status</code></pre>
+                </div>
+                <p><strong>Explanation:</strong> Configures an IP phone with extension 1001, connects to SIP server at 192.168.1.10, sets authentication, and registers with the server.</p>
+            </div>
+
+            <div class="programming-example">
+                <h3>🌐 Network Topology Example</h3>
+                <div class="code-example">
+                    <pre><code># Network Design:
+# Router1 (192.168.1.1) ←→ Switch1 ←→ PC1 (192.168.1.10)
+#                              ↓
+#                         Switch2 ←→ Server1 (192.168.1.20)
+#                              ↓
+#                         IP Phone (Extension 1001)
+
+# Configuration Steps:
+# 1. Configure Router1 with IP 192.168.1.1/24
+# 2. Configure Switch1 with VLAN 10
+# 3. Assign PC1 and Server1 to VLAN 10
+# 4. Configure IP Phone with SIP server
+# 5. Test connectivity with ping</code></pre>
+                </div>
+                <p><strong>Explanation:</strong> A complete network setup showing how devices connect and communicate in a typical office network.</p>
+            </div>
+        `;
     }
 
     showHardwareView() {
@@ -1406,9 +1864,103 @@ class NetworkBuilder {
     }
 
     detectCableType(fromDevice, toDevice) {
-        // Smart cabling: Same device types use crossover, different use straight-through
-        const sameType = fromDevice.type === toDevice.type;
-        return sameType ? 'crossover' : 'straight-through';
+        // Enhanced cable type detection with multiple cable types
+        const fromType = fromDevice.type;
+        const toType = toDevice.type;
+        
+        // Router to Router: Serial or Fiber
+        if (fromType === 'router' && toType === 'router') {
+            return 'serial';
+        }
+        
+        // Switch to Switch: Crossover or Fiber
+        if (fromType === 'switch' && toType === 'switch') {
+            return 'crossover';
+        }
+        
+        // Same device types (except routers): Crossover
+        if (fromType === toType && fromType !== 'router') {
+            return 'crossover';
+        }
+        
+        // Different device types: Straight-through
+        if (fromType !== toType) {
+            return 'straight-through';
+        }
+        
+        // Default: Straight-through
+        return 'straight-through';
+    }
+    
+    getCableInfo(cableType) {
+        const cableInfo = {
+            'straight-through': {
+                name: 'Straight-Through Cable',
+                description: 'Used to connect different types of devices (e.g., PC to Switch, Router to Switch)',
+                pinout: 'T568B on both ends',
+                useCases: [
+                    'PC to Switch',
+                    'Router to Switch',
+                    'Server to Switch',
+                    'Hub to Switch'
+                ],
+                color: '#3b82f6',
+                icon: '🔌'
+            },
+            'crossover': {
+                name: 'Crossover Cable',
+                description: 'Used to connect similar devices (e.g., Switch to Switch, PC to PC, Router to Router)',
+                pinout: 'T568A on one end, T568B on the other',
+                useCases: [
+                    'Switch to Switch',
+                    'PC to PC',
+                    'Hub to Hub',
+                    'Router to Router (Ethernet)'
+                ],
+                color: '#10b981',
+                icon: '🔀'
+            },
+            'serial': {
+                name: 'Serial Cable',
+                description: 'Used for WAN connections between routers (DCE/DTE)',
+                pinout: 'RS-232 or V.35 standard',
+                useCases: [
+                    'Router to Router (WAN)',
+                    'Router to Modem',
+                    'Point-to-Point connections'
+                ],
+                color: '#f59e0b',
+                icon: '📡'
+            },
+            'fiber': {
+                name: 'Fiber Optic Cable',
+                description: 'High-speed long-distance connections using light signals',
+                pinout: 'Single-mode or Multi-mode',
+                useCases: [
+                    'Long-distance connections',
+                    'High-speed data transfer',
+                    'Switch to Switch (backbone)',
+                    'Data center connections'
+                ],
+                color: '#8b5cf6',
+                icon: '💎'
+            },
+            'console': {
+                name: 'Console Cable',
+                description: 'Used for initial device configuration and management',
+                pinout: 'RJ-45 to DB-9 or USB',
+                useCases: [
+                    'Initial router configuration',
+                    'Switch management',
+                    'Device troubleshooting',
+                    'Out-of-band management'
+                ],
+                color: '#ef4444',
+                icon: '🖥️'
+            }
+        };
+        
+        return cableInfo[cableType] || cableInfo['straight-through'];
     }
 }
 
