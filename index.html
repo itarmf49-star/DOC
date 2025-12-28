@@ -104,6 +104,20 @@
                 </div>
 
                 <div class="device-category">
+                    <h3>VoIP & Telephony</h3>
+                    <div class="device-items">
+                        <div class="device-item" data-type="ipbx" data-device="ipbx-server">
+                            <div class="device-icon ipbx-icon">📞</div>
+                            <span>IPBX Server</span>
+                        </div>
+                        <div class="device-item" data-type="ipphone" data-device="ip-phone">
+                            <div class="device-icon ipphone-icon">☎️</div>
+                            <span>IP Phone</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="device-category">
                     <h3>Infrastructure</h3>
                     <div class="device-items">
                         <div class="device-item" data-type="wireless" data-device="wireless-ap">
@@ -181,6 +195,8 @@
             <aside class="properties-panel">
                 <div class="panel-tabs">
                     <button class="tab-btn active" data-tab="properties">Properties</button>
+                    <button class="tab-btn" data-tab="cli">CLI Terminal</button>
+                    <button class="tab-btn" data-tab="hardware">Hardware View</button>
                     <button class="tab-btn" data-tab="script">Generated Script</button>
                     <button class="tab-btn" data-tab="connections">Connections</button>
                 </div>
@@ -213,10 +229,102 @@
                         <p class="placeholder">No connections yet</p>
                     </div>
                 </div>
+
+                <div id="cliTab" class="tab-content">
+                    <h3>CLI Terminal</h3>
+                    <div class="cli-container">
+                        <div id="cliOutput" class="cli-output"></div>
+                        <div class="cli-input-container">
+                            <span class="cli-prompt" id="cliPrompt">Device#</span>
+                            <input type="text" id="cliInput" class="cli-input" autocomplete="off" spellcheck="false">
+                        </div>
+                        <button id="clearCli" class="btn btn-small" style="margin-top: 0.5rem;">Clear Terminal</button>
+                    </div>
+                </div>
+
+                <div id="hardwareTab" class="tab-content">
+                    <h3>Hardware View</h3>
+                    <div id="hardwareView" class="hardware-view">
+                        <p class="placeholder">Select a device to view hardware details</p>
+                    </div>
+                </div>
             </aside>
         </div>
     </div>
 
+    <!-- Command Cheat Sheet Sidebar -->
+    <aside id="cheatSheet" class="cheat-sheet">
+        <div class="cheat-sheet-header">
+            <h3>Command Cheat Sheet</h3>
+            <button id="toggleCheatSheet" class="btn-icon">×</button>
+        </div>
+        <div class="cheat-sheet-content">
+            <div class="cheat-section">
+                <h4>Basic Commands</h4>
+                <div class="cheat-item">
+                    <code>enable</code>
+                    <span>Enter privileged mode</span>
+                </div>
+                <div class="cheat-item">
+                    <code>conf t</code>
+                    <span>Enter configuration mode</span>
+                </div>
+                <div class="cheat-item">
+                    <code>exit</code>
+                    <span>Exit current mode</span>
+                </div>
+            </div>
+            <div class="cheat-section">
+                <h4>VLAN Commands</h4>
+                <div class="cheat-item">
+                    <code>vlan [id]</code>
+                    <span>Create/configure VLAN</span>
+                </div>
+                <div class="cheat-item">
+                    <code>name [name]</code>
+                    <span>Name the VLAN</span>
+                </div>
+            </div>
+            <div class="cheat-section">
+                <h4>Interface Commands</h4>
+                <div class="cheat-item">
+                    <code>interface [type]</code>
+                    <span>Configure interface</span>
+                </div>
+                <div class="cheat-item">
+                    <code>ip add [ip] [mask]</code>
+                    <span>Set IP address</span>
+                </div>
+                <div class="cheat-item">
+                    <code>no shutdown</code>
+                    <span>Enable interface</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Instructional Modal -->
+    <div id="instructionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Device Information</h2>
+                <button id="closeModal" class="btn-icon">×</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Content will be dynamically inserted -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Button -->
+    <button id="helpButton" class="help-button" title="Show Help">?</button>
+    <button id="toggleCheatSheetBtn" class="cheat-sheet-toggle" title="Toggle Cheat Sheet">📋</button>
+
+    <!-- Connection Line Overlay -->
+    <svg id="connectionOverlay" class="connection-overlay"></svg>
+
+    <script src="device-icons.js"></script>
+    <script src="cli-engine.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

@@ -8,12 +8,19 @@ class NetworkBuilder {
         this.draggedDevice = null;
         this.isDrawingConnection = false;
         this.connectionStart = null;
-        this.deviceCounter = { router: 0, switch: 0, pc: 0, server: 0, laptop: 0, wireless: 0, firewall: 0, cloud: 0, facade: 0 };
+        this.deviceCounter = { router: 0, switch: 0, pc: 0, server: 0, laptop: 0, wireless: 0, firewall: 0, cloud: 0, facade: 0, ipbx: 0, ipphone: 0 };
         this.zoomLevel = 1;
         this.departmentType = 'all-system';
+        this.cliEngine = null;
+        this.packetFlows = [];
+        this.activeConnections = new Set();
         
         this.initializeEventListeners();
         this.initializeCanvas();
+        this.initializeCLI();
+        this.initializeModals();
+        this.initializeCheatSheet();
+        this.startPacketFlowAnimation();
     }
 
     initializeEventListeners() {
@@ -267,26 +274,46 @@ class NetworkBuilder {
         deviceElement.style.transform = `scale(${this.zoomLevel})`;
         deviceElement.style.transformOrigin = 'top left';
 
-        const icons = {
-            router: '🔄',
-            switch: '🔀',
-            pc: '💻',
-            server: '🖥️',
-            laptop: '📱',
-            wireless: '📡',
-            firewall: '🛡️',
-            cloud: '☁️',
-            facade: '🏭'
-        };
+        // Use SVG icons if available, otherwise fallback to emoji
+        let iconHTML = '';
+        if (typeof getDeviceIcon === 'function') {
+            const svgIcon = getDeviceIcon(device.type, device.model);
+            if (svgIcon) {
+                iconHTML = `<div class="network-device-icon svg-icon">${svgIcon}</div>`;
+            }
+        }
+        
+        // Fallback to emoji icons
+        if (!iconHTML) {
+            const icons = {
+                router: '🔄',
+                switch: '🔀',
+                pc: '💻',
+                server: '🖥️',
+                laptop: '📱',
+                wireless: '📡',
+                firewall: '🛡️',
+                cloud: '☁️',
+                facade: '🏭',
+                ipbx: '📞',
+                ipphone: '☎️'
+            };
+            iconHTML = `<div class="network-device-icon">${icons[device.type] || '📦'}</div>`;
+        }
 
         deviceElement.innerHTML = `
-            <div class="network-device-icon">${icons[device.type] || '📦'}</div>
+            ${iconHTML}
             <div class="network-device-label">${device.label}</div>
             <div class="connection-point top" data-side="top"></div>
             <div class="connection-point bottom" data-side="bottom"></div>
             <div class="connection-point left" data-side="left"></div>
             <div class="connection-point right" data-side="right"></div>
         `;
+        
+        // Add double-click to show device info
+        deviceElement.addEventListener('dblclick', () => {
+            this.showDeviceInfo(device);
+        });
 
         deviceElement.addEventListener('mousedown', (e) => {
             if (this.currentMode === 'select') {
@@ -323,6 +350,10 @@ class NetworkBuilder {
                 element.classList.add('selected');
             }
             this.showDeviceProperties();
+            this.showHardwareView();
+            if (this.cliEngine) {
+                this.cliEngine.setDevice(this.selectedDevice);
+            }
         }
     }
 
@@ -585,6 +616,55 @@ class NetworkBuilder {
                     </div>
                 `;
             }
+        } else if (device.type === 'ipbx') {
+            html += `
+                <div class="property-group">
+                    <label>SIP Port</label>
+                    <input type="text" value="${device.properties.sipPort || '5060'}" 
+                           data-property="sipPort" onchange="networkBuilder.updateProperty('sipPort', this.value)">
+                </div>
+                <div class="property-group">
+                    <label>Codec</label>
+                    <select data-property="codec" onchange="networkBuilder.updateProperty('codec', this.value)">
+                        <option value="G.711" ${device.properties.codec === 'G.711' ? 'selected' : ''}>G.711</option>
+                        <option value="G.729" ${device.properties.codec === 'G.729' ? 'selected' : ''}>G.729</option>
+                        <option value="G.722" ${device.properties.codec === 'G.722' ? 'selected' : ''}>G.722</option>
+                    </select>
+                </div>
+            `;
+        } else if (device.type === 'ipphone') {
+            html += `
+                <div class="property-group">
+                    <label>Extension</label>
+                    <input type="text" value="${device.properties.extension || ''}" 
+                           data-property="extension" onchange="networkBuilder.updateProperty('extension', this.value)"
+                           placeholder="1001">
+                </div>
+                <div class="property-group">
+                    <label>SIP Server</label>
+                    <input type="text" value="${device.properties.sipServer || ''}" 
+                           data-property="sipServer" onchange="networkBuilder.updateProperty('sipServer', this.value)"
+                           placeholder="192.168.1.100">
+                </div>
+                <div class="property-group">
+                    <label>SIP Username</label>
+                    <input type="text" value="${device.properties.sipUsername || ''}" 
+                           data-property="sipUsername" onchange="networkBuilder.updateProperty('sipUsername', this.value)">
+                </div>
+                <div class="property-group">
+                    <label>SIP Password</label>
+                    <input type="password" value="${device.properties.sipPassword || ''}" 
+                           data-property="sipPassword" onchange="networkBuilder.updateProperty('sipPassword', this.value)">
+                </div>
+                <div class="property-group">
+                    <label>Codec</label>
+                    <select data-property="codec" onchange="networkBuilder.updateProperty('codec', this.value)">
+                        <option value="G.711" ${device.properties.codec === 'G.711' ? 'selected' : ''}>G.711</option>
+                        <option value="G.729" ${device.properties.codec === 'G.729' ? 'selected' : ''}>G.729</option>
+                        <option value="G.722" ${device.properties.codec === 'G.722' ? 'selected' : ''}>G.722</option>
+                    </select>
+                </div>
+            `;
         } else if (device.type === 'facade') {
             html += `
                 <div class="property-group">
@@ -887,6 +967,270 @@ class NetworkBuilder {
             this.updateConnectionsList();
             document.getElementById('deviceProperties').innerHTML = '<p class="placeholder">Select a device to configure</p>';
         }
+    }
+}
+
+    initializeCLI() {
+        if (typeof CLIEngine !== 'undefined') {
+            this.cliEngine = new CLIEngine(this);
+        }
+    }
+
+    initializeModals() {
+        const helpButton = document.getElementById('helpButton');
+        const closeModal = document.getElementById('closeModal');
+        const modal = document.getElementById('instructionModal');
+
+        if (helpButton) {
+            helpButton.addEventListener('click', () => {
+                this.showHelpModal();
+            });
+        }
+
+        if (closeModal && modal) {
+            closeModal.addEventListener('click', () => {
+                modal.classList.remove('active');
+            });
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                }
+            });
+        }
+    }
+
+    initializeCheatSheet() {
+        const toggleBtn = document.getElementById('toggleCheatSheetBtn');
+        const closeBtn = document.getElementById('toggleCheatSheet');
+        const cheatSheet = document.getElementById('cheatSheet');
+
+        if (toggleBtn && cheatSheet) {
+            toggleBtn.addEventListener('click', () => {
+                cheatSheet.classList.toggle('open');
+            });
+        }
+
+        if (closeBtn && cheatSheet) {
+            closeBtn.addEventListener('click', () => {
+                cheatSheet.classList.remove('open');
+            });
+        }
+    }
+
+    showDeviceInfo(device) {
+        const modal = document.getElementById('instructionModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalBody = document.getElementById('modalBody');
+
+        if (!modal || !modalTitle || !modalBody) return;
+
+        const deviceInfo = this.getDeviceInfo(device);
+        modalTitle.textContent = `${device.label} - ${deviceInfo.name}`;
+        modalBody.innerHTML = deviceInfo.html;
+        modal.classList.add('active');
+    }
+
+    getDeviceInfo(device) {
+        const info = {
+            switch: {
+                name: 'Network Switch',
+                html: `
+                    <h3>Description</h3>
+                    <p>A network switch connects devices on a local area network (LAN) and forwards data packets between them.</p>
+                    <h3>Technical Specifications</h3>
+                    <ul>
+                        <li>Type: Layer 2/3 Switch</li>
+                        <li>Ports: 8-48 ports (varies by model)</li>
+                        <li>Speed: 10/100/1000 Mbps or 10 Gbps</li>
+                        <li>Features: VLAN support, STP, Port Security</li>
+                    </ul>
+                    <h3>Common Uses</h3>
+                    <ul>
+                        <li>Connecting multiple devices in a network</li>
+                        <li>Creating VLANs for network segmentation</li>
+                        <li>Providing high-speed data transfer</li>
+                    </ul>
+                `
+            },
+            router: {
+                name: 'Network Router',
+                html: `
+                    <h3>Description</h3>
+                    <p>A router forwards data packets between computer networks, performing traffic directing functions on the Internet.</p>
+                    <h3>Technical Specifications</h3>
+                    <ul>
+                        <li>Type: Layer 3 Device</li>
+                        <li>Interfaces: Multiple Ethernet/WAN ports</li>
+                        <li>Routing Protocols: OSPF, EIGRP, BGP, RIP</li>
+                        <li>Features: NAT, Firewall, VPN support</li>
+                    </ul>
+                `
+            },
+            ipbx: {
+                name: 'IPBX Server',
+                html: `
+                    <h3>Description</h3>
+                    <p>An IP Private Branch Exchange (IPBX) is a telephone switching system that manages voice calls over IP networks.</p>
+                    <h3>Technical Specifications</h3>
+                    <ul>
+                        <li>Protocol: SIP (Session Initiation Protocol)</li>
+                        <li>Codecs: G.711, G.729, G.722</li>
+                        <li>Features: Call routing, Voicemail, IVR</li>
+                        <li>Capacity: 10-1000+ extensions</li>
+                    </ul>
+                    <h3>Configuration</h3>
+                    <p>Configure SIP trunks, extensions, and call routing rules through the web interface or CLI.</p>
+                `
+            },
+            ipphone: {
+                name: 'IP Phone',
+                html: `
+                    <h3>Description</h3>
+                    <p>An IP phone uses Voice over IP (VoIP) technology to make and receive calls over an IP network.</p>
+                    <h3>Technical Specifications</h3>
+                    <ul>
+                        <li>Protocol: SIP</li>
+                        <li>Display: LCD screen</li>
+                        <li>Features: Call hold, transfer, conference</li>
+                        <li>Power: PoE or AC adapter</li>
+                    </ul>
+                `
+            }
+        };
+
+        return info[device.type] || {
+            name: device.type.toUpperCase(),
+            html: `<p>Device information for ${device.label}</p>`
+        };
+    }
+
+    showHelpModal() {
+        const modal = document.getElementById('instructionModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalBody = document.getElementById('modalBody');
+
+        if (!modal || !modalTitle || !modalBody) return;
+
+        modalTitle.textContent = 'IT Hadrami Packet Tracker - Help';
+        modalBody.innerHTML = `
+            <h3>Getting Started</h3>
+            <p>Welcome to IT Hadrami Packet Tracker! This is a professional network simulation tool.</p>
+            <h3>Basic Operations</h3>
+            <ul>
+                <li><strong>Add Device:</strong> Drag a device from the palette to the canvas</li>
+                <li><strong>Move Device:</strong> Click and drag a device to reposition it</li>
+                <li><strong>Connect Devices:</strong> Use Connect mode and click connection points</li>
+                <li><strong>Configure Device:</strong> Select a device and use the Properties or CLI tab</li>
+            </ul>
+            <h3>CLI Terminal</h3>
+            <p>Use the CLI Terminal tab to configure devices using command-line interface. Type "help" in the terminal for available commands.</p>
+            <h3>Hardware View</h3>
+            <p>View physical ports and hardware specifications of selected devices.</p>
+        `;
+        modal.classList.add('active');
+    }
+
+    showHardwareView() {
+        const hardwareView = document.getElementById('hardwareView');
+        if (!hardwareView || !this.selectedDevice) return;
+
+        const device = this.selectedDevice;
+        let html = `<div class="hardware-specs">
+            <h4>Device Specifications</h4>
+            <div class="hardware-spec-item">
+                <span>Type:</span>
+                <span>${device.type.toUpperCase()}</span>
+            </div>
+            <div class="hardware-spec-item">
+                <span>Model:</span>
+                <span>${device.model || 'N/A'}</span>
+            </div>
+            <div class="hardware-spec-item">
+                <span>Hostname:</span>
+                <span>${device.properties.hostname}</span>
+            </div>
+            <div class="hardware-spec-item">
+                <span>IP Address:</span>
+                <span>${device.properties.ip}</span>
+            </div>
+        </div>`;
+
+        // Add port grid for switches and routers
+        if (device.type === 'switch' || device.type === 'router') {
+            const portCount = device.type === 'switch' ? 8 : 4;
+            html += `<div class="hardware-port-grid">`;
+            for (let i = 1; i <= portCount; i++) {
+                const portLabel = device.type === 'switch' ? `Port ${i}` : `Gig${i-1}/0`;
+                html += `
+                    <div class="hardware-port" data-port="${i}">
+                        <div class="hardware-port-label">${portLabel}</div>
+                    </div>
+                `;
+            }
+            html += `</div>`;
+        }
+
+        hardwareView.innerHTML = html;
+    }
+
+    startPacketFlowAnimation() {
+        setInterval(() => {
+            this.animatePacketFlows();
+        }, 100);
+    }
+
+    animatePacketFlows() {
+        // Animate packets on active connections
+        this.connections.forEach(conn => {
+            if (this.activeConnections.has(conn.id)) {
+                this.createPacketFlow(conn);
+            }
+        });
+    }
+
+    createPacketFlow(connection) {
+        // This will be enhanced with actual packet animation
+        const fromEl = document.querySelector(`.network-device[data-id="${connection.fromDevice}"]`);
+        const toEl = document.querySelector(`.network-device[data-id="${connection.toDevice}"]`);
+        
+        if (!fromEl || !toEl) return;
+
+        // Add active class to connection line
+        const svg = document.getElementById('connectionOverlay');
+        const line = svg.querySelector(`[data-connection-id="${connection.id}"]`);
+        if (line) {
+            line.classList.add('active');
+        }
+    }
+
+    addConnection(fromDeviceId, fromPoint, toDeviceId, toPoint) {
+        // Smart cabling detection
+        const fromDevice = this.devices.find(d => d.id === fromDeviceId);
+        const toDevice = this.devices.find(d => d.id === toDeviceId);
+        
+        const cableType = this.detectCableType(fromDevice, toDevice);
+        
+        const connection = {
+            id: `conn-${Date.now()}`,
+            fromDevice: fromDeviceId,
+            fromPoint,
+            toDevice: toDeviceId,
+            toPoint,
+            type: 'ethernet',
+            bandwidth: '1000',
+            cableType: cableType
+        };
+        this.connections.push(connection);
+        this.activeConnections.add(connection.id);
+        this.updateConnections();
+        this.updateConnectionsList();
+        this.updateScript();
+    }
+
+    detectCableType(fromDevice, toDevice) {
+        // Smart cabling: Same device types use crossover, different use straight-through
+        const sameType = fromDevice.type === toDevice.type;
+        return sameType ? 'crossover' : 'straight-through';
     }
 }
 
