@@ -1366,8 +1366,123 @@ class NetworkBuilder {
         
         // Populate programming tab
         this.populateProgrammingEducation();
+        
+        // Initialize AI assistant for education window
+        this.initializeEducationAI();
 
         educationWindow.classList.add('active');
+    }
+
+    initializeEducationAI() {
+        const aiInput = document.getElementById('aiEducationInput');
+        const aiSend = document.getElementById('aiEducationSend');
+        const aiMessages = document.getElementById('aiEducationMessages');
+        const suggestionBtns = document.querySelectorAll('.ai-suggestion-btn');
+
+        if (!aiInput || !aiSend || !aiMessages) return;
+
+        // Add welcome message
+        if (aiMessages.children.length === 0) {
+            this.addEducationAIMessage('Hello! I\'m your AI Network Teacher. Ask me anything about networking devices, cables, commands, or configurations. How can I help you?', 'assistant');
+        }
+
+        // Send button handler
+        aiSend.addEventListener('click', () => {
+            const message = aiInput.value.trim();
+            if (message) {
+                this.sendEducationAIMessage(message);
+                aiInput.value = '';
+            }
+        });
+
+        // Enter key handler
+        aiInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const message = aiInput.value.trim();
+                if (message) {
+                    this.sendEducationAIMessage(message);
+                    aiInput.value = '';
+                }
+            }
+        });
+
+        // Suggestion buttons
+        suggestionBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const query = btn.dataset.query;
+                if (query) {
+                    aiInput.value = query;
+                    this.sendEducationAIMessage(query);
+                }
+            });
+        });
+    }
+
+    addEducationAIMessage(text, type) {
+        const aiMessages = document.getElementById('aiEducationMessages');
+        if (!aiMessages) return;
+
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `ai-message ${type}`;
+        messageDiv.textContent = text;
+        
+        aiMessages.appendChild(messageDiv);
+        aiMessages.scrollTop = aiMessages.scrollHeight;
+    }
+
+    sendEducationAIMessage(userMessage) {
+        // Add user message
+        this.addEducationAIMessage(userMessage, 'user');
+
+        // Generate AI response using the existing AI assistant logic
+        setTimeout(() => {
+            const response = this.generateEducationAIResponse(userMessage);
+            this.addEducationAIMessage(response, 'assistant');
+        }, 500);
+    }
+
+    generateEducationAIResponse(userMessage) {
+        const lowerMessage = userMessage.toLowerCase();
+        
+        // Router queries
+        if (lowerMessage.includes('router') || lowerMessage.includes('routing')) {
+            if (lowerMessage.includes('configure') || lowerMessage.includes('ip') || lowerMessage.includes('address')) {
+                return 'To configure a router IP address: 1) Enter privileged mode with "enable", 2) Enter config mode with "configure terminal", 3) Select interface with "interface gigabitethernet 0/0", 4) Set IP with "ip address 192.168.1.1 255.255.255.0", 5) Enable with "no shutdown", 6) Save with "copy running-config startup-config".';
+            }
+            if (lowerMessage.includes('ospf')) {
+                return 'To configure OSPF: 1) "router ospf 1" (process ID 1), 2) "network 192.168.1.0 0.0.0.255 area 0" to advertise networks, 3) "show ip ospf neighbor" to verify neighbors. OSPF uses areas to organize networks and calculate shortest paths.';
+            }
+            return 'A router operates at Layer 3 (Network Layer) and routes packets between different networks. It uses routing tables to determine the best path. Key features: IP addressing, NAT, firewall, VPN support. Commands: "show ip route" to view routing table, "ip route" for static routes, "router ospf" for dynamic routing.';
+        }
+
+        // Switch queries
+        if (lowerMessage.includes('switch') || lowerMessage.includes('vlan')) {
+            if (lowerMessage.includes('vlan') || lowerMessage.includes('create')) {
+                return 'To create a VLAN: 1) "configure terminal", 2) "vlan 10" to create VLAN 10, 3) "name Sales" to name it, 4) "interface f0/1" to select port, 5) "switchport mode access", 6) "switchport access vlan 10" to assign. Use "show vlan" to verify.';
+            }
+            if (lowerMessage.includes('trunk')) {
+                return 'To configure a trunk: 1) "interface f0/24", 2) "switchport mode trunk", 3) "switchport trunk encapsulation dot1q" (for 802.1Q), 4) "switchport trunk allowed vlan 10,20,30" to specify VLANs. Use "show interfaces trunk" to verify.';
+            }
+            return 'A switch operates at Layer 2 (Data Link Layer) and forwards frames based on MAC addresses. Key features: VLAN support, port security, STP, MAC learning. Commands: "show mac address-table" to view learned MACs, "show vlan" for VLAN info, "switchport mode" to configure ports.';
+        }
+
+        // Cable queries
+        if (lowerMessage.includes('cable') || lowerMessage.includes('crossover') || lowerMessage.includes('straight')) {
+            return 'Cable types: 1) Straight-through: Used for different device types (PC↔Switch, Router↔Switch), T568B on both ends. 2) Crossover: Used for same device types (Switch↔Switch, PC↔PC), T568A on one end, T568B on other. 3) Serial: Router-to-router WAN connections. 4) Fiber: High-speed long-distance. 5) Console: Device management.';
+        }
+
+        // IP/Addressing queries
+        if (lowerMessage.includes('ip') || lowerMessage.includes('address') || lowerMessage.includes('subnet')) {
+            return 'IP addressing: IPv4 uses 32-bit addresses (e.g., 192.168.1.1). Subnet mask (e.g., 255.255.255.0 or /24) determines network portion. Private ranges: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16. To configure: "ip address 192.168.1.1 255.255.255.0" on interface. Use "show ip interface brief" to verify.';
+        }
+
+        // General networking
+        if (lowerMessage.includes('network') || lowerMessage.includes('tcp/ip') || lowerMessage.includes('osi')) {
+            return 'TCP/IP Model layers: 1) Application (HTTP, FTP, DNS), 2) Transport (TCP, UDP), 3) Internet (IP, ICMP), 4) Network Access (Ethernet). OSI Model has 7 layers. Routers work at Layer 3, Switches at Layer 2. Use "ping" to test connectivity, "traceroute" to trace path.';
+        }
+
+        // Default response
+        return 'I can help you with router configuration, switch/VLAN setup, cable types, IP addressing, routing protocols (OSPF, EIGRP), network troubleshooting, and more. Try asking about specific devices, commands, or network concepts!';
     }
 
     populateDevicesEducation() {
@@ -1578,8 +1693,24 @@ class NetworkBuilder {
                         <p>Enter privileged EXEC mode (requires password)</p>
                     </div>
                     <div class="command-item">
+                        <code>disable</code>
+                        <p>Exit privileged EXEC mode</p>
+                    </div>
+                    <div class="command-item">
                         <code>configure terminal</code> or <code>conf t</code>
                         <p>Enter global configuration mode</p>
+                    </div>
+                    <div class="command-item">
+                        <code>exit</code>
+                        <p>Exit current configuration mode</p>
+                    </div>
+                    <div class="command-item">
+                        <code>end</code>
+                        <p>Exit configuration mode to privileged EXEC</p>
+                    </div>
+                    <div class="command-item">
+                        <code>hostname R1</code>
+                        <p>Set device hostname</p>
                     </div>
                     <div class="command-item">
                         <code>interface gigabitethernet 0/0</code> or <code>int g0/0</code>
@@ -1590,16 +1721,40 @@ class NetworkBuilder {
                         <p>Configure IP address and subnet mask</p>
                     </div>
                     <div class="command-item">
+                        <code>ip address 192.168.1.1 255.255.255.0 secondary</code>
+                        <p>Configure secondary IP address</p>
+                    </div>
+                    <div class="command-item">
                         <code>no shutdown</code>
                         <p>Enable the interface</p>
                     </div>
                     <div class="command-item">
+                        <code>shutdown</code>
+                        <p>Disable the interface</p>
+                    </div>
+                    <div class="command-item">
+                        <code>description "Connection to LAN"</code>
+                        <p>Add description to interface</p>
+                    </div>
+                    <div class="command-item">
                         <code>router ospf 1</code>
-                        <p>Enable OSPF routing protocol</p>
+                        <p>Enable OSPF routing protocol (process ID 1)</p>
+                    </div>
+                    <div class="command-item">
+                        <code>router eigrp 100</code>
+                        <p>Enable EIGRP routing protocol (AS 100)</p>
                     </div>
                     <div class="command-item">
                         <code>network 192.168.1.0 0.0.0.255 area 0</code>
-                        <p>Advertise network in OSPF</p>
+                        <p>Advertise network in OSPF area 0</p>
+                    </div>
+                    <div class="command-item">
+                        <code>ip route 0.0.0.0 0.0.0.0 192.168.1.1</code>
+                        <p>Configure default static route</p>
+                    </div>
+                    <div class="command-item">
+                        <code>ip route 10.0.0.0 255.0.0.0 192.168.1.2</code>
+                        <p>Configure static route to network 10.0.0.0/8</p>
                     </div>
                     <div class="command-item">
                         <code>show ip route</code>
@@ -1607,7 +1762,27 @@ class NetworkBuilder {
                     </div>
                     <div class="command-item">
                         <code>show ip interface brief</code>
-                        <p>Display interface status</p>
+                        <p>Display interface status summary</p>
+                    </div>
+                    <div class="command-item">
+                        <code>show ip interface</code>
+                        <p>Display detailed interface information</p>
+                    </div>
+                    <div class="command-item">
+                        <code>show running-config</code>
+                        <p>Display current configuration</p>
+                    </div>
+                    <div class="command-item">
+                        <code>show startup-config</code>
+                        <p>Display saved configuration</p>
+                    </div>
+                    <div class="command-item">
+                        <code>copy running-config startup-config</code>
+                        <p>Save current configuration</p>
+                    </div>
+                    <div class="command-item">
+                        <code>reload</code>
+                        <p>Reload the router</p>
                     </div>
                 </div>
             </div>
@@ -1616,40 +1791,112 @@ class NetworkBuilder {
                 <h3>🔀 Switch Commands (Cisco IOS)</h3>
                 <div class="command-list">
                     <div class="command-item">
+                        <code>enable</code>
+                        <p>Enter privileged EXEC mode</p>
+                    </div>
+                    <div class="command-item">
+                        <code>configure terminal</code> or <code>conf t</code>
+                        <p>Enter global configuration mode</p>
+                    </div>
+                    <div class="command-item">
                         <code>vlan 10</code>
-                        <p>Create VLAN 10</p>
+                        <p>Create/configure VLAN 10</p>
                     </div>
                     <div class="command-item">
                         <code>name Sales</code>
                         <p>Name the VLAN</p>
                     </div>
                     <div class="command-item">
+                        <code>no vlan 10</code>
+                        <p>Delete VLAN 10</p>
+                    </div>
+                    <div class="command-item">
+                        <code>vlan database</code>
+                        <p>Enter VLAN database mode (older switches)</p>
+                    </div>
+                    <div class="command-item">
+                        <code>interface fastethernet 0/1</code> or <code>int f0/1</code>
+                        <p>Enter interface configuration mode</p>
+                    </div>
+                    <div class="command-item">
                         <code>interface range fastethernet 0/1-10</code>
-                        <p>Configure multiple interfaces</p>
+                        <p>Configure multiple interfaces at once</p>
+                    </div>
+                    <div class="command-item">
+                        <code>interface range f0/1-5, f0/10-15</code>
+                        <p>Configure multiple interface ranges</p>
                     </div>
                     <div class="command-item">
                         <code>switchport mode access</code>
-                        <p>Set port as access port</p>
-                    </div>
-                    <div class="command-item">
-                        <code>switchport access vlan 10</code>
-                        <p>Assign port to VLAN 10</p>
+                        <p>Set port as access port (single VLAN)</p>
                     </div>
                     <div class="command-item">
                         <code>switchport mode trunk</code>
-                        <p>Set port as trunk port</p>
+                        <p>Set port as trunk port (multiple VLANs)</p>
+                    </div>
+                    <div class="command-item">
+                        <code>switchport access vlan 10</code>
+                        <p>Assign access port to VLAN 10</p>
+                    </div>
+                    <div class="command-item">
+                        <code>switchport trunk encapsulation dot1q</code>
+                        <p>Set trunk encapsulation to 802.1Q</p>
                     </div>
                     <div class="command-item">
                         <code>switchport trunk allowed vlan 10,20,30</code>
                         <p>Allow specific VLANs on trunk</p>
                     </div>
                     <div class="command-item">
+                        <code>switchport trunk allowed vlan all</code>
+                        <p>Allow all VLANs on trunk</p>
+                    </div>
+                    <div class="command-item">
+                        <code>switchport trunk native vlan 99</code>
+                        <p>Set native VLAN for trunk</p>
+                    </div>
+                    <div class="command-item">
+                        <code>switchport port-security</code>
+                        <p>Enable port security</p>
+                    </div>
+                    <div class="command-item">
+                        <code>switchport port-security maximum 2</code>
+                        <p>Set maximum MAC addresses</p>
+                    </div>
+                    <div class="command-item">
+                        <code>switchport port-security violation shutdown</code>
+                        <p>Shutdown port on security violation</p>
+                    </div>
+                    <div class="command-item">
+                        <code>spanning-tree portfast</code>
+                        <p>Enable PortFast on access port</p>
+                    </div>
+                    <div class="command-item">
                         <code>show vlan</code>
                         <p>Display VLAN information</p>
                     </div>
                     <div class="command-item">
+                        <code>show vlan brief</code>
+                        <p>Display brief VLAN information</p>
+                    </div>
+                    <div class="command-item">
                         <code>show mac address-table</code>
                         <p>Display MAC address table</p>
+                    </div>
+                    <div class="command-item">
+                        <code>show mac address-table dynamic</code>
+                        <p>Display learned MAC addresses</p>
+                    </div>
+                    <div class="command-item">
+                        <code>show interfaces switchport</code>
+                        <p>Display switchport configuration</p>
+                    </div>
+                    <div class="command-item">
+                        <code>show interfaces trunk</code>
+                        <p>Display trunk port information</p>
+                    </div>
+                    <div class="command-item">
+                        <code>show spanning-tree</code>
+                        <p>Display spanning tree information</p>
                     </div>
                 </div>
             </div>
@@ -1659,7 +1906,7 @@ class NetworkBuilder {
                 <div class="command-list">
                     <div class="command-item">
                         <code>sip register</code>
-                        <p>Register SIP extension</p>
+                        <p>Register SIP extension with server</p>
                     </div>
                     <div class="command-item">
                         <code>extension 1001</code>
@@ -1667,15 +1914,89 @@ class NetworkBuilder {
                     </div>
                     <div class="command-item">
                         <code>sip server 192.168.1.10</code>
-                        <p>Set SIP server address</p>
+                        <p>Set SIP server IP address</p>
+                    </div>
+                    <div class="command-item">
+                        <code>sip username 1001</code>
+                        <p>Set SIP username for authentication</p>
+                    </div>
+                    <div class="command-item">
+                        <code>sip password mypassword</code>
+                        <p>Set SIP password</p>
                     </div>
                     <div class="command-item">
                         <code>codec g711</code>
-                        <p>Set audio codec (G.711, G.729, etc.)</p>
+                        <p>Set audio codec to G.711 (high quality)</p>
+                    </div>
+                    <div class="command-item">
+                        <code>codec g729</code>
+                        <p>Set audio codec to G.729 (compressed)</p>
+                    </div>
+                    <div class="command-item">
+                        <code>sip port 5060</code>
+                        <p>Set SIP port (default 5060)</p>
+                    </div>
+                    <div class="command-item">
+                        <code>rtp port 10000</code>
+                        <p>Set RTP port range start</p>
                     </div>
                     <div class="command-item">
                         <code>show sip status</code>
                         <p>Display SIP registration status</p>
+                    </div>
+                    <div class="command-item">
+                        <code>show sip configuration</code>
+                        <p>Display SIP configuration</p>
+                    </div>
+                    <div class="command-item">
+                        <code>dial 1002</code>
+                        <p>Dial extension 1002</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="command-category">
+                <h3>💻 General Network Commands</h3>
+                <div class="command-list">
+                    <div class="command-item">
+                        <code>ping 192.168.1.1</code>
+                        <p>Test connectivity to IP address</p>
+                    </div>
+                    <div class="command-item">
+                        <code>traceroute 192.168.1.1</code>
+                        <p>Trace route to destination</p>
+                    </div>
+                    <div class="command-item">
+                        <code>telnet 192.168.1.1</code>
+                        <p>Telnet to remote device</p>
+                    </div>
+                    <div class="command-item">
+                        <code>ssh 192.168.1.1</code>
+                        <p>SSH to remote device</p>
+                    </div>
+                    <div class="command-item">
+                        <code>show clock</code>
+                        <p>Display system clock</p>
+                    </div>
+                    <div class="command-item">
+                        <code>show version</code>
+                        <p>Display system version information</p>
+                    </div>
+                    <div class="command-item">
+                        <code>show cdp neighbors</code>
+                        <p>Display CDP neighbor information</p>
+                    </div>
+                    <div class="command-item">
+                        <code>show ip arp</code>
+                        <p>Display ARP table</p>
+                    </div>
+                    <div class="command-item">
+                        <code>clear ip arp</code>
+                        <p>Clear ARP table</p>
+                    </div>
+                    <div class="command-item">
+                        <code>write memory</code>
+                        <p>Save configuration (alternative to copy run start)</p>
                     </div>
                 </div>
             </div>

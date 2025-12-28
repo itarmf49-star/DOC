@@ -319,6 +319,74 @@
         </div>
     </div>
 
+    <!-- Comprehensive Educational Window -->
+    <div id="educationWindow" class="modal education-modal">
+        <div class="modal-content education-content">
+            <div class="modal-header">
+                <h2>📚 IT Hadrami Learning Center</h2>
+                <button id="closeEducationWindow" class="btn-icon">×</button>
+            </div>
+            <div class="modal-body education-body">
+                <div class="education-tabs">
+                    <button class="edu-tab active" data-tab="devices">Devices</button>
+                    <button class="edu-tab" data-tab="cables">Cables</button>
+                    <button class="edu-tab" data-tab="commands">Commands</button>
+                    <button class="edu-tab" data-tab="programming">Programming</button>
+                    <button class="edu-tab" data-tab="ai-help">🤖 AI Assistant</button>
+                </div>
+                
+                <div class="education-content-area">
+                    <!-- Devices Tab -->
+                    <div id="edu-devices" class="edu-tab-content active">
+                        <div class="device-education-grid">
+                            <!-- Content will be populated by JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <!-- Cables Tab -->
+                    <div id="edu-cables" class="edu-tab-content">
+                        <div class="cable-education-grid">
+                            <!-- Content will be populated by JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <!-- Commands Tab -->
+                    <div id="edu-commands" class="edu-tab-content">
+                        <div class="command-education-content">
+                            <!-- Content will be populated by JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <!-- Programming Tab -->
+                    <div id="edu-programming" class="edu-tab-content">
+                        <div class="programming-education-content">
+                            <!-- Content will be populated by JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <!-- AI Assistant Tab -->
+                    <div id="edu-ai-help" class="edu-tab-content">
+                        <div class="ai-education-content">
+                            <div class="ai-chat-container">
+                                <div id="aiEducationMessages" class="ai-messages"></div>
+                                <div class="ai-input-container">
+                                    <input type="text" id="aiEducationInput" placeholder="Ask me anything about networking, devices, cables, or commands..." class="ai-input">
+                                    <button id="aiEducationSend" class="btn btn-primary">Send</button>
+                                </div>
+                                <div class="ai-suggestions">
+                                    <button class="ai-suggestion-btn" data-query="What is a router and how does it work?">What is a router?</button>
+                                    <button class="ai-suggestion-btn" data-query="Explain VLAN configuration">VLAN Configuration</button>
+                                    <button class="ai-suggestion-btn" data-query="How to configure IP address on a router?">IP Configuration</button>
+                                    <button class="ai-suggestion-btn" data-query="What is the difference between straight-through and crossover cables?">Cable Types</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Help Button -->
     <button id="helpButton" class="help-button" title="Show Help">?</button>
     <button id="toggleCheatSheetBtn" class="cheat-sheet-toggle" title="Toggle Cheat Sheet">📋</button>
