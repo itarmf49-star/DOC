@@ -159,24 +159,56 @@ class NetworkBuilder {
     }
 
     handleMouseDown(e) {
-        // Don't handle if clicking on a device (device handles its own events)
-        if (e.target.closest('.network-device')) {
-            return;
-        }
-        
         const canvas = document.getElementById('networkCanvas');
+        
+        // In connect mode, allow clicking on devices to start connection
         if (this.currentMode === 'connect') {
-            const connectionPoint = e.target.closest('.connection-point');
-            if (connectionPoint) {
+            const deviceElement = e.target.closest('.network-device');
+            if (deviceElement) {
                 e.stopPropagation();
+                const deviceId = deviceElement.dataset.id;
+                
+                // Find the closest edge/point on the device based on click position
+                const rect = deviceElement.getBoundingClientRect();
+                const canvasRect = canvas.getBoundingClientRect();
+                const scrollLeft = canvas.scrollLeft;
+                const scrollTop = canvas.scrollTop;
+                
+                const clickX = e.clientX - canvasRect.left + scrollLeft;
+                const clickY = e.clientY - canvasRect.top + scrollTop;
+                
+                const deviceX = parseFloat(deviceElement.style.left || 0);
+                const deviceY = parseFloat(deviceElement.style.top || 0);
+                const deviceWidth = deviceElement.offsetWidth;
+                const deviceHeight = deviceElement.offsetHeight;
+                const centerX = deviceX + deviceWidth / 2;
+                const centerY = deviceY + deviceHeight / 2;
+                
+                // Determine which side is closest
+                const dx = clickX - centerX;
+                const dy = clickY - centerY;
+                let point = 'right';
+                if (Math.abs(dy) > Math.abs(dx)) {
+                    point = dy < 0 ? 'top' : 'bottom';
+                } else {
+                    point = dx < 0 ? 'left' : 'right';
+                }
+                
                 this.isDrawingConnection = true;
-                const deviceElement = connectionPoint.closest('.network-device');
                 this.connectionStart = {
-                    deviceId: deviceElement.dataset.id,
-                    point: connectionPoint.dataset.side
+                    deviceId: deviceId,
+                    point: point,
+                    x: clickX / this.zoomLevel,
+                    y: clickY / this.zoomLevel
                 };
                 canvas.classList.add('drawing-connection');
+                return;
             }
+        }
+        
+        // Don't handle device clicks in other modes (device handles its own events)
+        if (e.target.closest('.network-device')) {
+            return;
         }
     }
 
@@ -205,27 +237,75 @@ class NetworkBuilder {
 
     handleMouseUp(e) {
         if (this.isDrawingConnection) {
-            const connectionPoint = e.target.closest('.connection-point');
-            if (connectionPoint) {
-                const deviceElement = connectionPoint.closest('.network-device');
-                const endDeviceId = deviceElement.dataset.id;
-                const endPoint = connectionPoint.dataset.side;
+            const canvas = document.getElementById('networkCanvas');
+            const canvasRect = canvas.getBoundingClientRect();
+            const scrollLeft = canvas.scrollLeft;
+            const scrollTop = canvas.scrollTop;
+            
+            const endX = (e.clientX - canvasRect.left + scrollLeft) / this.zoomLevel;
+            const endY = (e.clientY - canvasRect.top + scrollTop) / this.zoomLevel;
+            
+            // Find device at the end point
+            const endDevice = this.findDeviceAtPoint(endX, endY);
+            
+            if (endDevice && this.connectionStart && this.connectionStart.deviceId !== endDevice.id) {
+                // Find the closest edge on the end device
+                const endPoint = this.findClosestEdge(endDevice, endX, endY);
                 
-                if (this.connectionStart && this.connectionStart.deviceId !== endDeviceId) {
-                    this.addConnection(
-                        this.connectionStart.deviceId,
-                        this.connectionStart.point,
-                        endDeviceId,
-                        endPoint
-                    );
-                }
+                this.addConnection(
+                    this.connectionStart.deviceId,
+                    this.connectionStart.point,
+                    endDevice.id,
+                    endPoint
+                );
             }
+            
             this.isDrawingConnection = false;
             this.connectionStart = null;
             document.getElementById('networkCanvas').classList.remove('drawing-connection');
             this.clearTemporaryConnection();
         }
         this.draggedDevice = null;
+    }
+    
+    findDeviceAtPoint(x, y) {
+        // Find device at the given point
+        const devices = document.querySelectorAll('.network-device');
+        for (let deviceEl of devices) {
+            const deviceX = parseFloat(deviceEl.style.left || 0);
+            const deviceY = parseFloat(deviceEl.style.top || 0);
+            const deviceWidth = deviceEl.offsetWidth;
+            const deviceHeight = deviceEl.offsetHeight;
+            
+            if (x >= deviceX && x <= deviceX + deviceWidth &&
+                y >= deviceY && y <= deviceY + deviceHeight) {
+                const deviceId = deviceEl.dataset.id;
+                return this.devices.find(d => d.id === deviceId);
+            }
+        }
+        return null;
+    }
+    
+    findClosestEdge(device, x, y) {
+        const deviceEl = document.querySelector(`.network-device[data-id="${device.id}"]`);
+        if (!deviceEl) return 'right';
+        
+        const deviceX = device.x;
+        const deviceY = device.y;
+        const deviceWidth = deviceEl.offsetWidth;
+        const deviceHeight = deviceEl.offsetHeight;
+        const centerX = deviceX + deviceWidth / 2;
+        const centerY = deviceY + deviceHeight / 2;
+        
+        const dx = x - centerX;
+        const dy = y - centerY;
+        
+        // Determine which edge is closest
+        if (Math.abs(dy) > Math.abs(dx)) {
+            return dy < 0 ? 'top' : 'bottom';
+        } else {
+            return dx < 0 ? 'left' : 'right';
+        }
     }
 
     addDevice(type, model, x, y) {
@@ -370,13 +450,20 @@ class NetworkBuilder {
 
         // Handle device interaction - allow both selection and dragging
         deviceElement.addEventListener('mousedown', (e) => {
+            const canvas = document.getElementById('networkCanvas');
+            
+            if (this.currentMode === 'connect') {
+                // Allow canvas to handle connection start
+                // Don't stop propagation - let canvas handleMouseDown handle it
+                return;
+            }
+            
             e.stopPropagation(); // Prevent canvas from handling this
             
             if (this.currentMode === 'select') {
                 this.selectDevice(device.id);
                 // Start dragging
                 this.draggedDevice = deviceElement;
-                const canvas = document.getElementById('networkCanvas');
                 const rect = canvas.getBoundingClientRect();
                 const scrollLeft = canvas.scrollLeft;
                 const scrollTop = canvas.scrollTop;
@@ -387,8 +474,12 @@ class NetworkBuilder {
             }
         });
         
-        // Make device draggable
-        deviceElement.style.cursor = 'move';
+        // Make device draggable or show connection cursor
+        if (this.currentMode === 'connect') {
+            deviceElement.style.cursor = 'crosshair';
+        } else {
+            deviceElement.style.cursor = 'move';
+        }
 
         canvas.appendChild(deviceElement);
         this.updateDeviceElement(device);
@@ -545,6 +636,8 @@ class NetworkBuilder {
             tempLine.setAttribute('id', 'temp-connection-line');
             tempLine.setAttribute('class', 'connection-line');
             tempLine.setAttribute('stroke-dasharray', '5,5');
+            tempLine.setAttribute('stroke', '#3b82f6');
+            tempLine.setAttribute('stroke-width', '3');
             svg.appendChild(tempLine);
         }
         
@@ -553,10 +646,14 @@ class NetworkBuilder {
             const rect = canvas.getBoundingClientRect();
             const scrollLeft = canvas.scrollLeft;
             const scrollTop = canvas.scrollTop;
+            
+            // Calculate start point from device edge
             const startX = parseFloat(startEl.style.left || 0) + startEl.offsetWidth / 2 + 
                           this.getConnectionOffset(this.connectionStart.point, 'x', startEl.offsetWidth);
             const startY = parseFloat(startEl.style.top || 0) + startEl.offsetHeight / 2 + 
                           this.getConnectionOffset(this.connectionStart.point, 'y', startEl.offsetHeight);
+            
+            // End point follows mouse cursor
             const endX = (e.clientX - rect.left + scrollLeft) / this.zoomLevel;
             const endY = (e.clientY - rect.top + scrollTop) / this.zoomLevel;
             

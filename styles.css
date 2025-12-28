@@ -402,8 +402,8 @@ body {
     cursor: crosshair;
 }
 
-.canvas.drawing-connection .connection-point {
-    pointer-events: all;
+.canvas.drawing-connection .network-device {
+    cursor: crosshair !important;
 }
 
 /* Network Device on Canvas */
