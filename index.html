@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IT Hadrami Packet Tracker - Network Configuration Tool</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo-container">
+                    <div class="logo-icon">🌐</div>
+                    <h1 class="logo-text">IT Hadrami Packet Tracker</h1>
+                </div>
+                <div class="header-actions">
+                    <button id="exportScript" class="btn btn-primary">Export Script</button>
+                    <button id="clearCanvas" class="btn btn-secondary">Clear Canvas</button>
+                    <button id="saveProject" class="btn btn-success">Save Project</button>
+                    <button id="loadProject" class="btn btn-info">Load Project</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Device Palette Sidebar -->
+            <aside class="device-palette">
+                <h2>Network Devices</h2>
+                <div class="device-category">
+                    <h3>Routers</h3>
+                    <div class="device-items">
+                        <div class="device-item" data-type="router" data-device="router-2901">
+                            <div class="device-icon router-icon">🔄</div>
+                            <span>Router 2901</span>
+                        </div>
+                        <div class="device-item" data-type="router" data-device="router-1941">
+                            <div class="device-icon router-icon">🔄</div>
+                            <span>Router 1941</span>
+                        </div>
+                        <div class="device-item" data-type="router" data-device="router-asr">
+                            <div class="device-icon router-icon">🔄</div>
+                            <span>ASR Router</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="device-category">
+                    <h3>Switches</h3>
+                    <div class="device-items">
+                        <div class="device-item" data-type="switch" data-device="switch-2960">
+                            <div class="device-icon switch-icon">🔀</div>
+                            <span>Switch 2960</span>
+                        </div>
+                        <div class="device-item" data-type="switch" data-device="switch-3750">
+                            <div class="device-icon switch-icon">🔀</div>
+                            <span>Switch 3750</span>
+                        </div>
+                        <div class="device-item" data-type="switch" data-device="switch-l3">
+                            <div class="device-icon switch-icon">🔀</div>
+                            <span>Layer 3 Switch</span>
+                        </div>
+                        <div class="device-item" data-type="switch" data-device="switch-tplink-omada-tl-sg2210mp">
+                            <div class="device-icon switch-icon">🔀</div>
+                            <span>TP-Link Omada TL-SG2210MP</span>
+                        </div>
+                        <div class="device-item" data-type="switch" data-device="switch-tplink-omada-tl-sg3428x">
+                            <div class="device-icon switch-icon">🔀</div>
+                            <span>TP-Link Omada TL-SG3428X</span>
+                        </div>
+                        <div class="device-item" data-type="switch" data-device="switch-tplink-omada-tl-sg2428p">
+                            <div class="device-icon switch-icon">🔀</div>
+                            <span>TP-Link Omada TL-SG2428P</span>
+                        </div>
+                        <div class="device-item" data-type="switch" data-device="switch-tplink-omada-tl-sg105e">
+                            <div class="device-icon switch-icon">🔀</div>
+                            <span>TP-Link Omada TL-SG105E</span>
+                        </div>
+                        <div class="device-item" data-type="switch" data-device="switch-tplink-omada-tl-sg2218">
+                            <div class="device-icon switch-icon">🔀</div>
+                            <span>TP-Link Omada TL-SG2218</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="device-category">
+                    <h3>End Devices</h3>
+                    <div class="device-items">
+                        <div class="device-item" data-type="pc" data-device="pc">
+                            <div class="device-icon pc-icon">💻</div>
+                            <span>PC</span>
+                        </div>
+                        <div class="device-item" data-type="server" data-device="server">
+                            <div class="device-icon server-icon">🖥️</div>
+                            <span>Server</span>
+                        </div>
+                        <div class="device-item" data-type="laptop" data-device="laptop">
+                            <div class="device-icon laptop-icon">📱</div>
+                            <span>Laptop</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="device-category">
+                    <h3>Infrastructure</h3>
+                    <div class="device-items">
+                        <div class="device-item" data-type="wireless" data-device="wireless-ap">
+                            <div class="device-icon wireless-icon">📡</div>
+                            <span>Wireless AP</span>
+                        </div>
+                        <div class="device-item" data-type="firewall" data-device="firewall">
+                            <div class="device-icon firewall-icon">🛡️</div>
+                            <span>Firewall</span>
+                        </div>
+                        <div class="device-item" data-type="cloud" data-device="cloud">
+                            <div class="device-icon cloud-icon">☁️</div>
+                            <span>Cloud</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="device-category">
+                    <h3>Engineering Structures</h3>
+                    <div class="device-items">
+                        <div class="device-item" data-type="facade" data-device="distribution-center">
+                            <div class="device-icon facade-icon">🏭</div>
+                            <span>Distribution Center</span>
+                        </div>
+                        <div class="device-item" data-type="facade" data-device="data-center">
+                            <div class="device-icon facade-icon">🏢</div>
+                            <span>Data Center</span>
+                        </div>
+                        <div class="device-item" data-type="facade" data-device="network-hub">
+                            <div class="device-icon facade-icon">🔌</div>
+                            <span>Network Hub</span>
+                        </div>
+                        <div class="device-item" data-type="facade" data-device="tower">
+                            <div class="device-icon facade-icon">📶</div>
+                            <span>Communication Tower</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Canvas Area -->
+            <main class="canvas-area">
+                <div class="canvas-toolbar">
+                    <div class="toolbar-group">
+                        <button id="selectMode" class="tool-btn active" data-mode="select">🔍 Select</button>
+                        <button id="connectMode" class="tool-btn" data-mode="connect">🔗 Connect</button>
+                        <button id="deleteMode" class="tool-btn" data-mode="delete">🗑️ Delete</button>
+                    </div>
+                    <div class="toolbar-group">
+                        <span>Zoom: </span>
+                        <button id="zoomIn" class="tool-btn">➕</button>
+                        <button id="zoomOut" class="tool-btn">➖</button>
+                        <button id="resetZoom" class="tool-btn">🔍 Reset</button>
+                    </div>
+                    <div class="toolbar-group">
+                        <span>Department:</span>
+                        <select id="departmentSelect">
+                            <option value="all-system">All-System</option>
+                            <option value="multi-device">Multi-Device</option>
+                            <option value="electronics">Electronics Distribution</option>
+                            <option value="network">Network Infrastructure</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="canvas-container">
+                    <div class="portal-background">
+                        <canvas id="animatedBackground" class="animated-bg"></canvas>
+                    </div>
+                    <div id="networkCanvas" class="canvas"></div>
+                    <svg id="connectionOverlay" class="connection-overlay"></svg>
+                </div>
+            </main>
+
+            <!-- Properties/Script Panel -->
+            <aside class="properties-panel">
+                <div class="panel-tabs">
+                    <button class="tab-btn active" data-tab="properties">Properties</button>
+                    <button class="tab-btn" data-tab="script">Generated Script</button>
+                    <button class="tab-btn" data-tab="connections">Connections</button>
+                </div>
+
+                <div id="propertiesTab" class="tab-content active">
+                    <h3>Device Properties</h3>
+                    <div id="deviceProperties" class="properties-content">
+                        <p class="placeholder">Select a device to configure</p>
+                    </div>
+                </div>
+
+                <div id="scriptTab" class="tab-content">
+                    <h3>Generated Configuration Script</h3>
+                    <div class="script-toolbar">
+                        <button id="copyScript" class="btn btn-small">Copy</button>
+                        <button id="downloadScript" class="btn btn-small">Download</button>
+                        <select id="scriptFormat">
+                            <option value="cisco">Cisco IOS</option>
+                            <option value="junos">Juniper JunOS</option>
+                            <option value="json">JSON</option>
+                            <option value="yaml">YAML</option>
+                        </select>
+                    </div>
+                    <pre id="generatedScript" class="script-output"><code>No script generated yet. Add devices and configure them.</code></pre>
+                </div>
+
+                <div id="connectionsTab" class="tab-content">
+                    <h3>Network Connections</h3>
+                    <div id="connectionsList" class="connections-content">
+                        <p class="placeholder">No connections yet</p>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
